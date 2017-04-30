@@ -14,7 +14,13 @@
 </head>
 <body>
 
-<form action="">
+<form action="add_modifyPerson.jsp" method="post">
+    <%
+
+        out.println("test: " + request.getParameter("name") + request.getParameter("changePerson"));
+        boolean modifyPerson = request.getParameter("changePerson") != null;
+        out.println(modifyPerson);
+    %>
 
     <div class="divTable">
         <div class="divTableBody">
@@ -56,7 +62,17 @@
         </div>
     </div>
 
-    <input type="submit" value="Add/Modify">
+    <%
+        if (!modifyPerson){
+            out.println("<input type=\"submit\" name=\"addPerson\" value=\"Add\">");
+        }
+        else {
+            out.println("<input type=\"button\" value =\"Modify\" onclick=\"location.href='listPersons.jsp'\" >");
+        }
+    %>
+
+
+
 </form>
 
 <button type="button" onclick="location.href='index.jsp'">Back</button>
