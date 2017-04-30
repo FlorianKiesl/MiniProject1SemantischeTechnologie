@@ -11,6 +11,9 @@
     <title>$Title$</title>
   </head>
   <body>
-  $END$
+
+  <h1>MiniProject Semantic Web</h1>
+  <button type="button" onclick="location.href='add_modifyPerson.jsp'">Add Person</button>
+  <button type="button" onclick="location.href='listPersons.jsp'">List Persons</button>
   </body>
 </html>
