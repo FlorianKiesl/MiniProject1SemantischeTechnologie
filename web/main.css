@@ -36,3 +36,11 @@
     padding: 3px 10px;
     width: 100px;
 }
+
+form{
+    float: left;
+    clear: both;
+    display: inline-block;
+    margin: 0px;
+    padding: 0px;
+}

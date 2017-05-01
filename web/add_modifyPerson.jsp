@@ -17,16 +17,27 @@
 <form action="add_modifyPerson.jsp" method="post">
     <%
 
-        out.println("test: " + request.getParameter("name") + request.getParameter("changePerson"));
+
         boolean modifyPerson = request.getParameter("changePerson") != null;
-        out.println(modifyPerson);
+        boolean addPerson = request.getParameter("addPerson") != null;
+        String idModifyPerson = "";
+
+        if (addPerson){
+            out.println("test: " + request.getParameter("name"));
+        }
+
+        if (modifyPerson){
+            idModifyPerson = request.getParameter("changePerson");
+
+        }
+
     %>
 
     <div class="divTable">
         <div class="divTableBody">
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">name:</div>
-                <div class="divTableCell"><input type="text" name="name"></div>
+                <div class="divTableCell"><input type="text" name="name" value="<% out.println(idModifyPerson); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Gender:</div>
