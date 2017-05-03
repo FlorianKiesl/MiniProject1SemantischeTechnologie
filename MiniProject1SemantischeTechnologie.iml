@@ -20,5 +20,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="jenaLibs(3.2.0)" level="project" />
+    <orderEntry type="library" name="tomcat" level="project" />
   </component>
 </module>
