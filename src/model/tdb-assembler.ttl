@@ -1,0 +1,13 @@
+@prefix tdb:     <http://jena.hpl.hp.com/2008/tdb#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix:         <http://example.org/> .
+
+[] ja:loadClass "org.apache.jena.tdb.TDB" .
+tdb:DatasetTDB  rdfs:subClassOf  ja:RDFDataset .
+tdb:GraphTDB    rdfs:subClassOf  ja:Model      .
+
+<#dataset> rdf:type         tdb:DatasetTDB ;
+    tdb:location "C:/Users/David/IntelliJProjects/MiniProject1SemantischeTechnologie/src/model/dataset1" ;  # Change to a location on your file system!!!
+    .
