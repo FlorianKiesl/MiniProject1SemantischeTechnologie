@@ -33,6 +33,10 @@
 <div class="divTable" style="width: 50%;">
     <div class="divTableBody">
         <div class="divTableRow">
+            <div class="divTableCellFirstColumn">Name:</div>
+            <div class="divTableCell"><input type="text" name="filterName"></div>
+        </div>
+        <div class="divTableRow">
             <div class="divTableCellFirstColumn">Gender:</div>
             <div class="divTableCell"><select>
                 <option value="m">M</option>
@@ -41,15 +45,15 @@
         </div>
         <div class="divTableRow">
             <div class="divTableCellFirstColumn">Street:</div>
-            <div class="divTableCell"><input type="text" name="street"></div>
+            <div class="divTableCell"><input type="text" name="filterStreet"></div>
         </div>
         <div class="divTableRow">
             <div class="divTableCellFirstColumn">ZIP Code:</div>
-            <div class="divTableCell"><input type="text" name="zipcode"></div>
+            <div class="divTableCell"><input type="text" name="filterZipcode"></div>
         </div>
         <div class="divTableRow">
             <div class="divTableCellFirstColumn">City:</div>
-            <div class="divTableCell"><input type="text" name="zipcode"></div>
+            <div class="divTableCell"><input type="text" name="filterCity"></div>
         </div>
     </div>
 </div>
@@ -93,6 +97,6 @@
     </div>
 </div>
 
-<button type="button" onclick="location.href='index.jsp'">Back</button>
+<button type="button" onclick="location.href='index.jsp'">Home</button>
 </body>
 </html>
