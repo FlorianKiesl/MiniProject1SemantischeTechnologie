@@ -16,6 +16,19 @@ public class MainTestRDF {
     private static Dataset dataset;
 
     public static void main(String[] args) {
+        Person p1 = new Person("David", Gender.MALE, 22, "Austria", "Linz", "Reuchlinstraße", 4020, "JKU");
+        Person p2 = new Person("Florian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
+
+        insertPerson(p1);
+        insertPerson(p2);
+
+        /*updatePerson("Max", "age", "35", "34");
+        updatePerson("Max", "address", "Hauptstrasse", "Musterstrasse");*/
+    }
+
+    // todo: addresse in land, ort und plz
+    // todo: employer
+    public static void insertPerson(Person p) {
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
 
@@ -27,38 +40,37 @@ public class MainTestRDF {
             dataset.end();
         }
 
-        insertPerson("David", "male", 23, "Reuchlinstrasse");
-        insertPerson("Max", "male", 34, "Musterstrasse");
-        insertPerson("Lisa", "female", 21, "Luststrasse");
-
-        updatePerson("Max", "age", "35", "34");
-        updatePerson("Max", "address", "Hauptstrasse", "Musterstrasse");
-
-        dataset.close(); //CLOSE DB-CONNECTION
-    }
-
-    // todo: addresse in land, ort und plz
-    // todo: employer
-    private static void insertPerson(String name, String gender, int age, String address) {
         dataset.begin(ReadWrite.WRITE);
         try {
             String inputString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                     "PREFIX : <http://example.org/> " +
+                    "INSERT DATA { :" + p.getEmployer() + " a :Employer . };" +
                     "INSERT DATA {" +
-                    ":" + name + "  a :Person; " +
-                    ":gender \"" + gender + "\"@en; :age " + age + "; " +
-                    ":address \"" + address + "\".} ";
+                        ":" + p.getName() + "  a :Person; " +
+                        ":gender \"" + p.getGender().toString() + "\"@en; :age " + p.getAge() + ";" +
+                        ":country \"" + p.getCountry() + "\";" +
+                        ":city \"" + p.getCity() + "\";" +
+                        ":zip \"" + p.getZip() + "\";" +
+                        ":address \"" + p.getAddress() + "\";" +
+                        ":employer :" + p.getEmployer() + "." +
+                    "} ";
 
             UpdateRequest update = UpdateFactory.create(inputString);
             UpdateAction.execute(update, dataset);
 
+            RDFDataMgr.write(System.out, dataset, Lang.TRIG);
+
             dataset.commit();
         } finally {
             dataset.end();
+            dataset.close();
         }
     }
 
     private static void updatePerson(String name, String att, String newValue, String oldValue) {
+        dataset = TDBFactory.assembleDataset(
+                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+
         dataset.begin(ReadWrite.WRITE);
         try {
             String inputString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
@@ -76,10 +88,14 @@ public class MainTestRDF {
             dataset.commit();
         } finally {
             dataset.end();
+            dataset.close();
         }
     }
 
     private static void deletePerson(String name) {
+        dataset = TDBFactory.assembleDataset(
+                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+
         dataset.begin(ReadWrite.WRITE);
         try {
             String inputString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
@@ -96,6 +112,7 @@ public class MainTestRDF {
             dataset.commit();
         } finally {
             dataset.end();
+            dataset.close();
         }
     }
 }
