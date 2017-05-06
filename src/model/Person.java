@@ -1,112 +1,88 @@
 package model;
 
-import java.util.Date;
-
-/**
- * Created by Florian on 30/04/2017.
- */
 public class Person {
 
-    private enum Gender {
-        M,
-        W
-    };
-
     private String name;
-
-    private String address;
-
-    private String country;
-
     private Gender gender;
-
-    private String zipCode;
-
+    private int age;
+    private String country;
     private String city;
-
-    private Date birthdate;
-
+    private String address;
+    private int zip;
     private String employer;
 
-    public String getName() {
+    public Person(String name, Gender gender, int age, String country, String city, String address, int zip, String employer) {
+        this.name = name;
+        this.gender = gender;
+        this.age = age;
+        this.country = country;
+        this.city = city;
+        this.address = address;
+        this.zip = zip;
+        this.employer = employer;
+    }
 
+    public String getName() {
         return name;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public String getCountry() {
-        return country;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Gender getGender() {
         return gender;
     }
 
-    public String getZipCode() {
-        return zipCode;
+    public void setGender(Gender gender) {
+        this.gender = gender;
     }
 
-    public String getCity() {
-        return city;
+    public int getAge() {
+        return age;
     }
 
-    public Date getBirthdate() {
-        return birthdate;
+    public void setAge(int age) {
+        this.age = age;
     }
 
-    public String getEmployer() {
-        return employer;
-    }
-
-    public void setName(String name) {
-
-        this.name = name;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+    public String getCountry() {
+        return country;
     }
 
     public void setCountry(String country) {
         this.country = country;
     }
 
-    public void setGender(Gender gender) {
-        this.gender = gender;
-    }
-
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
+    public String getCity() {
+        return city;
     }
 
     public void setCity(String city) {
         this.city = city;
     }
 
-    public void setBirthdate(Date birthdate) {
-        this.birthdate = birthdate;
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getZip() {
+        return zip;
+    }
+
+    public void setZip(int zip) {
+        this.zip = zip;
+    }
+
+    public String getEmployer() {
+        return employer;
     }
 
     public void setEmployer(String employer) {
-        this.employer = employer;
-    }
-
-    public Person(String pName){
-        this(pName,"","", Gender.W, "","",null,"");
-    }
-
-    public Person(String name, String address, String country,
-                  Gender gender, String zipCode, String city, Date birthdate, String employer) {
-        this.name = name;
-        this.address = address;
-        this.country = country;
-        this.gender = gender;
-        this.zipCode = zipCode;
-        this.city = city;
-        this.birthdate = birthdate;
         this.employer = employer;
     }
 }
