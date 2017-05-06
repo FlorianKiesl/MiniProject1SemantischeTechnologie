@@ -4,6 +4,7 @@ import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.resultset.ResultsFormat;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.update.*;
 import org.apache.jena.vocabulary.RDF;
@@ -19,19 +20,6 @@ public class MainTestRDF {
     private static Dataset dataset;
 
     public static void main(String[] args) {
-        Person p1 = new Person("David", Gender.MALE, 22, "Austria", "Linz", "Reuchlinstraße", 4020, "JKU");
-        Person p2 = new Person("Florian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
-
-        insertPerson(p1);
-        insertPerson(p2);
-
-        /*updatePerson("Max", "age", "35", "34");
-        updatePerson("Max", "address", "Hauptstrasse", "Musterstrasse");*/
-    }
-
-    // todo: addresse in land, ort und plz
-    // todo: employer
-    public static void insertPerson(Person p) {
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
 
@@ -42,6 +30,26 @@ public class MainTestRDF {
         } finally {
             dataset.end();
         }
+
+        Person p1 = new Person("David", Gender.MALE, 22, "Austria", "Linz", "Reuchlinstraße", 4020, "JKU");
+        Person p2 = new Person("Florian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
+        Person p3 = new Person("Christian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
+
+
+        insertPerson(p1);
+        insertPerson(p2);
+        insertPerson(p3);
+
+        getPersons();
+        /*updatePerson("Max", "age", "35", "34");
+        updatePerson("Max", "address", "Hauptstrasse", "Musterstrasse");*/
+    }
+
+    // todo: addresse in land, ort und plz
+    // todo: employer
+    public static void insertPerson(Person p) {
+        dataset = TDBFactory.assembleDataset(
+                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
 
         dataset.begin(ReadWrite.WRITE);
         try {
@@ -121,12 +129,38 @@ public class MainTestRDF {
 
     public static void filterPersons(Person p){
 
-
-
     }
 
     public static List<Person> getPersons(){
 
+        dataset = TDBFactory.assembleDataset(
+                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+        try{
+            dataset.begin(ReadWrite.READ);
+
+            Model model = dataset.getDefaultModel();
+            model.write(System.out, "RDF/XML");
+
+            String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                    "PREFIX : <http://example.org/> " +
+                    "SELECT * WHERE {?a a :Person;" +
+                    ":age ?b;" +
+                    ":address ?c;" +
+                    ":gender ?g. }";
+            QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
+            ResultSet rs = qExec.execSelect() ;
+
+            ResultSetFormatter.out(rs) ;
+
+
+        } catch (Exception exc){
+            System.out.print(exc);
+        }
+
+        finally {
+            dataset.end();
+            dataset.close();
+        }
 
         return new ArrayList<Person>();
     }
