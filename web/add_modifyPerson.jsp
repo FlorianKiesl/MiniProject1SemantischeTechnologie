@@ -28,7 +28,6 @@
 
         if (modifyPerson){
             idModifyPerson = request.getParameter("changePerson");
-
         }
 
     %>
@@ -37,7 +36,7 @@
         <div class="divTableBody">
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">name:</div>
-                <div class="divTableCell"><input type="text" name="name" value="<% out.println(idModifyPerson); %>"></div>
+                <div class="divTableCell"><input type="text" disabled="<% out.println(modifyPerson); %>" name="name" value="<% out.println(idModifyPerson); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Gender:</div>
@@ -63,6 +62,10 @@
                 <div class="divTableCell"><input type="text" name="zipcode"></div>
             </div>
             <div class="divTableRow">
+                <div class="divTableCellFirstColumn">Country:</div>
+                <div class="divTableCell"><input type="text" name="zipcode"></div>
+            </div>
+            <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Employer:</div>
                 <div class="divTableCell"><input type="text" name="employer"></div>
             </div>
@@ -82,10 +85,11 @@
         }
     %>
 
-
+    <button type="button" onclick="location.href='index.jsp'">Home</button>
 
 </form>
 
-<button type="button" onclick="location.href='index.jsp'">Back</button>
+
+
 </body>
 </html>

@@ -9,6 +9,9 @@ import org.apache.jena.update.*;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Florian on 25/04/2017.
  */
@@ -97,5 +100,17 @@ public class MainTestRDF {
         } finally {
             dataset.end();
         }
+    }
+
+    public static void filterPersons(Person p){
+
+
+
+    }
+
+    public static List<Person> getPersons(){
+
+
+        return new ArrayList<Person>();
     }
 }
