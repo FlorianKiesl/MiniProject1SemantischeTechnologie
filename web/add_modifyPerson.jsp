@@ -1,4 +1,6 @@
-<%--
+<%@ page import="model.MainTestRDF" %>
+<%@ page import="model.Person" %>
+<%@ page import="model.Gender" %><%--
   Created by IntelliJ IDEA.
   User: Florian
   Date: 30/04/2017
@@ -23,7 +25,17 @@
         String idModifyPerson = "";
 
         if (addPerson){
-            out.println("test: " + request.getParameter("name"));
+            Person personItem = new Person();
+            personItem.setName(request.getParameter("name"));
+            String gender = request.getParameter("gender");
+            if(gender == "m"){
+                personItem.setGender(Gender.MALE);
+            } else {
+                personItem.setGender(Gender.FEMALE);
+            }
+            MainTestRDF.insertPerson(personItem);
+
+            out.println("Person: " + request.getParameter("name") + " wurde hinzugefügt!");
         }
 
         if (modifyPerson){
@@ -36,13 +48,13 @@
         <div class="divTableBody">
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">name:</div>
-                <div class="divTableCell"><input type="text" disabled="<% out.println(modifyPerson); %>" name="name" value="<% out.println(idModifyPerson); %>"></div>
+                <div class="divTableCell"><input type="text" <% if(modifyPerson){out.println("disabled");}  %> name="name" value="<% out.println(idModifyPerson); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Gender:</div>
                 <div class="divTableCell"><select>
-                    <option value="m">M</option>
-                    <option value="w">W</option>
+                    <option value="m" name="gender">M</option>
+                    <option value="w" name="gender">W</option>
                 </select></div>
             </div>
             <div class="divTableRow">

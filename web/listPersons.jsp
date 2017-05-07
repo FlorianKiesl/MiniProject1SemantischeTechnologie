@@ -1,6 +1,8 @@
 <%@ page import="java.util.List" %>
 <%@ page import="model.Person" %>
-<%@ page import="java.util.ArrayList" %><%--
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="model.MainTestRDF" %>
+<%@ page import="sun.applet.Main" %><%--
   Created by IntelliJ IDEA.
   User: Florian
   Date: 30/04/2017
@@ -16,13 +18,14 @@
 <body>
 
 <%
-    List<Person> listPerson = new ArrayList<Person>();
-    listPerson.add(new Person("Florian"));
-    listPerson.add(new Person("David"));
+    MainTestRDF.getPersons();
+
+    List<Person> listPerson = MainTestRDF.getPersons();
 
     if(request.getParameter("deletePerson") != null){
-
-        listPerson.remove(1);
+        System.out.print("delete");
+        //MainTestRDF.deletePerson(request.getParameter("deletePerson"));
+        listPerson = MainTestRDF.getPersons();
     }
 
     if (request.getParameter("filter") != null){
@@ -82,7 +85,7 @@
                 out.println("<div class=\"divTableRow\">" +
                             "<div class=\"divTableCell\">" + item.getName() + "</div>" +
                             "<div class=\"divTableCell\">&nbsp;</div>" +
-                            "<div class=\"divTableCell\">&nbsp;</div>" +
+                            "<div class=\"divTableCell\">" + item.getAge() + "</div>" +
                             "<div class=\"divTableCell\">&nbsp;</div>" +
                             "<div class=\"divTableCell\">&nbsp;</div>" +
                             "<div class=\"divTableCell\">" +

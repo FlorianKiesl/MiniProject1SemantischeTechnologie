@@ -11,6 +11,10 @@ public class Person {
     private int zip;
     private String employer;
 
+    public  Person(){
+        this("", Gender.MALE, 0, "", "", "", 0, "");
+    }
+
     public Person(String name, Gender gender, int age, String country, String city, String address, int zip, String employer) {
         this.name = name;
         this.gender = gender;

@@ -135,6 +135,7 @@ public class MainTestRDF {
 
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+        List<Person> listPersonen = new ArrayList<Person>();
         try{
             dataset.begin(ReadWrite.READ);
 
@@ -146,11 +147,33 @@ public class MainTestRDF {
                     "SELECT * WHERE {?a a :Person;" +
                     ":age ?b;" +
                     ":address ?c;" +
-                    ":gender ?g. }";
+                    ":zip ?d;" +
+                    ":city ?e;" +
+                    ":address ?f;" +
+                    ":employer ?g;" +
+                    ":gender ?h. }";
             QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
             ResultSet rs = qExec.execSelect() ;
+            //ResultSetFormatter.out(rs) ;
 
-            ResultSetFormatter.out(rs) ;
+            Person pListItem;
+
+            while (rs.hasNext()){
+                QuerySolution qs = rs.next();
+                System.out.print(qs.getResource("a").getLocalName() + " " + qs.getLiteral("b").getString());
+                System.out.print(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getString());
+
+
+                //System.out.print(qs.getResource("a").listProperties());
+
+                pListItem = new Person();
+                pListItem.setName(qs.getResource("a").getLocalName());
+                pListItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
+
+                listPersonen.add(pListItem);
+            }
+
+
 
 
         } catch (Exception exc){
@@ -162,6 +185,6 @@ public class MainTestRDF {
             dataset.close();
         }
 
-        return new ArrayList<Person>();
+        return listPersonen;
     }
 }

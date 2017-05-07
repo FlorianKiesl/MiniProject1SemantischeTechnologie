@@ -2,7 +2,7 @@ package model;
 
 public enum Gender {
     MALE("male"),
-    FEALE("female");
+    FEMALE("female");
 
     private final String text;
 
