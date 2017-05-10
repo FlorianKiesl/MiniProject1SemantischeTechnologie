@@ -1,29 +1,33 @@
 package model;
 
+import java.util.Date;
+
 public class Person {
 
     private String name;
     private Gender gender;
-    private int age;
+    private Date birthdate;
     private String country;
     private String city;
     private String address;
-    private int zip;
+    private String zip;
     private String employer;
+    private String ownsOrg;
 
     public  Person(){
-        this("", Gender.MALE, 0, "", "", "", 0, "");
+        this("", Gender.MALE, new Date(), "", "", "", "", "", "");
     }
 
-    public Person(String name, Gender gender, int age, String country, String city, String address, int zip, String employer) {
+    public Person(String name, Gender gender, Date birthdate, String country, String city, String address, String zip, String employer, String ownsOrg) {
         this.name = name;
         this.gender = gender;
-        this.age = age;
+        this.birthdate = birthdate;
         this.country = country;
         this.city = city;
         this.address = address;
         this.zip = zip;
         this.employer = employer;
+        this.ownsOrg = ownsOrg;
     }
 
     public String getName() {
@@ -42,12 +46,12 @@ public class Person {
         this.gender = gender;
     }
 
-    public int getAge() {
-        return age;
+    public Date getBirthdate() {
+        return birthdate;
     }
 
-    public void setAge(int age) {
-        this.age = age;
+    public void setBirthdate(int age) {
+        this.birthdate = birthdate;
     }
 
     public String getCountry() {
@@ -74,11 +78,11 @@ public class Person {
         this.address = address;
     }
 
-    public int getZip() {
+    public String getZip() {
         return zip;
     }
 
-    public void setZip(int zip) {
+    public void setZip(String zip) {
         this.zip = zip;
     }
 
@@ -89,4 +93,8 @@ public class Person {
     public void setEmployer(String employer) {
         this.employer = employer;
     }
+
+    public String getOwnsOrg () { return ownsOrg; }
+
+    public void setOwnsOrg (String ownsOrg) { this.ownsOrg = ownsOrg; }
 }

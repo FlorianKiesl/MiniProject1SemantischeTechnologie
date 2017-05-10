@@ -31,14 +31,14 @@ public class MainTestRDF {
             dataset.end();
         }
 
-        Person p1 = new Person("David", Gender.MALE, 22, "Austria", "Linz", "Reuchlinstraße", 4020, "JKU");
-        Person p2 = new Person("Florian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
-        Person p3 = new Person("Christian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
+        //Person p1 = new Person("David", Gender.MALE, 22, "Austria", "Linz", "Reuchlinstraße", 4020, "JKU");
+        //Person p2 = new Person("Florian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
+        //Person p3 = new Person("Christian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
 
 
-        insertPerson(p1);
-        insertPerson(p2);
-        insertPerson(p3);
+        //insertPerson(p1);
+        //insertPerson(p2);
+        //insertPerson(p3);
 
         getPersons();
         getPerson("Christian");
@@ -59,7 +59,7 @@ public class MainTestRDF {
                     "INSERT DATA { :" + p.getEmployer() + " a :Employer . };" +
                     "INSERT DATA {" +
                         ":" + p.getName() + "  a :Person; " +
-                        ":gender \"" + p.getGender().toString() + "\"@en; :age " + p.getAge() + ";" +
+                        //":gender \"" + p.getGender().toString() + "\"@en; :age " + p.getAge() + ";" +
                         ":country \"" + p.getCountry() + "\";" +
                         ":city \"" + p.getCity() + "\";" +
                         ":zip \"" + p.getZip() + "\";" +
@@ -158,10 +158,10 @@ public class MainTestRDF {
             } else {
                 personItem.setGender(Gender.FEMALE);
             }
-            personItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
+            //personItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
             personItem.setCity(qs.getResource("a").getProperty(model.getProperty("http://example.org/city")).getString());
             personItem.setAddress(qs.getResource("a").getProperty(model.getProperty("http://example.org/address")).getString());
-            personItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
+            //personItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
             personItem.setCountry(qs.getResource("a").getProperty(model.getProperty("http://example.org/country")).getString());
 
 
@@ -219,10 +219,10 @@ public class MainTestRDF {
                     pListItem.setGender(Gender.FEMALE);
                 }
 
-                pListItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
+                //pListItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
                 pListItem.setCity(qs.getResource("a").getProperty(model.getProperty("http://example.org/city")).getString());
                 pListItem.setAddress(qs.getResource("a").getProperty(model.getProperty("http://example.org/address")).getString());
-                pListItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
+                //pListItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
                 pListItem.setCountry(qs.getResource("a").getProperty(model.getProperty("http://example.org/country")).getString());
 
                 listPersonen.add(pListItem);
