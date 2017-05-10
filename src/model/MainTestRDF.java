@@ -41,6 +41,7 @@ public class MainTestRDF {
         insertPerson(p3);
 
         getPersons();
+        getPerson("Christian");
         /*updatePerson("Max", "age", "35", "34");
         updatePerson("Max", "address", "Hauptstrasse", "Musterstrasse");*/
     }
@@ -131,6 +132,50 @@ public class MainTestRDF {
 
     }
 
+    public static  Person getPerson(String name) {
+
+        dataset = TDBFactory.assembleDataset(
+                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+        Person personItem = new Person();
+
+        try {
+            dataset.begin(ReadWrite.READ);
+            Model model = dataset.getDefaultModel();
+            String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                    "PREFIX : <http://example.org/> " +
+                    "SELECT * WHERE {?a a :Person;" +
+                                    "FILTER(?a = :" + name + ").}";
+            QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
+            ResultSet rs = qExec.execSelect();
+            QuerySolution qs = rs.next();
+
+
+            personItem = new Person();
+            personItem.setName(qs.getResource("a").getLocalName());
+            String gender = qs.getResource("a").getProperty(model.getProperty("http://example.org/gender")).getString();
+            if(gender.compareToIgnoreCase("male") == 0){
+                personItem.setGender(Gender.MALE);
+            } else {
+                personItem.setGender(Gender.FEMALE);
+            }
+            personItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
+            personItem.setCity(qs.getResource("a").getProperty(model.getProperty("http://example.org/city")).getString());
+            personItem.setAddress(qs.getResource("a").getProperty(model.getProperty("http://example.org/address")).getString());
+            personItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
+            personItem.setCountry(qs.getResource("a").getProperty(model.getProperty("http://example.org/country")).getString());
+
+
+            ResultSetFormatter.out(rs) ;
+
+        } catch (Exception exc) {
+            System.out.print(exc);
+        } finally {
+            dataset.end();
+            dataset.close();
+        }
+        return  personItem;
+    }
+
     public static List<Person> getPersons(){
 
         dataset = TDBFactory.assembleDataset(
@@ -140,7 +185,6 @@ public class MainTestRDF {
             dataset.begin(ReadWrite.READ);
 
             Model model = dataset.getDefaultModel();
-            model.write(System.out, "RDF/XML");
 
             String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                     "PREFIX : <http://example.org/> " +
@@ -168,7 +212,18 @@ public class MainTestRDF {
 
                 pListItem = new Person();
                 pListItem.setName(qs.getResource("a").getLocalName());
+                String gender = qs.getResource("a").getProperty(model.getProperty("http://example.org/gender")).getString();
+                if(gender.compareToIgnoreCase("male") == 0){
+                    pListItem.setGender(Gender.MALE);
+                } else {
+                    pListItem.setGender(Gender.FEMALE);
+                }
+
                 pListItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
+                pListItem.setCity(qs.getResource("a").getProperty(model.getProperty("http://example.org/city")).getString());
+                pListItem.setAddress(qs.getResource("a").getProperty(model.getProperty("http://example.org/address")).getString());
+                pListItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
+                pListItem.setCountry(qs.getResource("a").getProperty(model.getProperty("http://example.org/country")).getString());
 
                 listPersonen.add(pListItem);
             }
