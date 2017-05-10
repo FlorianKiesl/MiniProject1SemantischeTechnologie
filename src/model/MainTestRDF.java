@@ -5,12 +5,15 @@ import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.resultset.ResultsFormat;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.update.*;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.VCARD;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,40 +34,116 @@ public class MainTestRDF {
             dataset.end();
         }
 
-        Person p1 = new Person("David", Gender.MALE, 22, "Austria", "Linz", "Reuchlinstraße", 4020, "JKU");
-        Person p2 = new Person("Florian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
-        Person p3 = new Person("Christian", Gender.MALE, 25, "Austria", "Linz", "Hauptstraße", 4020, "JKU");
-
+        Person p1 = new Person("David", Gender.MALE, null, "Austria", "Linz", "Reuchlinstraße", "4020", "JKU", "SomeOrg");
+        Person p2 = new Person("Florian", Gender.MALE, new Date(), "Austria", "Linz", "Hauptstraße", "4020", "JKU", "SomeOrg");
+        Person p3 = new Person("Christian", Gender.MALE, new Date(), "Austria", "Linz", "Hauptstraße", "4020", "JKU", "");
+        Person p4 = new Person("Max", Gender.MALE, new Date(), "Austria", "Linz", "Musterstraße", "4020", "JKU", "");
 
         insertPerson(p1);
-        insertPerson(p2);
-        insertPerson(p3);
+        //insertPerson(p2);
+        //insertPerson(p3);
+        //insertPerson(p4);
 
-        getPersons();
-        /*updatePerson("Max", "age", "35", "34");
-        updatePerson("Max", "address", "Hauptstrasse", "Musterstrasse");*/
+        Person up1 = new Person("David", Gender.MALE, null, "USA", "Linz", "Reuchlinstraße", "4020", "JKU", "");
+
+        updatePerson(p1, up1);
+        deletePerson(up1);
     }
 
-    // todo: addresse in land, ort und plz
-    // todo: employer
+    // todo: unternehmer-eigentümer: Person p, Org-name
+    // todo: Date: null, alles andere leer-string
     public static void insertPerson(Person p) {
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
 
         dataset.begin(ReadWrite.WRITE);
         try {
-            String inputString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                    "PREFIX : <http://example.org/> " +
-                    "INSERT DATA { :" + p.getEmployer() + " a :Employer . };" +
-                    "INSERT DATA {" +
-                        ":" + p.getName() + "  a :Person; " +
-                        ":gender \"" + p.getGender().toString() + "\"@en; :age " + p.getAge() + ";" +
-                        ":country \"" + p.getCountry() + "\";" +
-                        ":city \"" + p.getCity() + "\";" +
-                        ":zip \"" + p.getZip() + "\";" +
-                        ":address \"" + p.getAddress() + "\";" +
-                        ":employer :" + p.getEmployer() + "." +
-                    "} ";
+            Model model = dataset.getDefaultModel();
+
+            String nsPerson = "http://www.example/person";
+            String nsOrg = "http://www.example/org";
+            String nsRDF = RDF.getURI();
+            String nsFoaf = FOAF.getURI();
+            String nsVcard = VCARD.getURI();
+
+            model.setNsPrefix("person", nsPerson);
+            model.setNsPrefix("org", nsOrg);
+            model.setNsPrefix("rdf", nsRDF);
+            model.setNsPrefix("foaf", nsFoaf);
+            model.setNsPrefix("vcard", nsVcard);
+
+            Resource person = ResourceFactory.createResource(nsPerson + p.getName());
+            model.add(person, RDF.type, FOAF.Person);
+            model.add(person, FOAF.name, p.getName());
+            model.add(person, FOAF.gender, p.getGender().toString());
+            if (!(p.getBirthdate() == null))
+                model.add(person, VCARD.BDAY, p.getBirthdate().toString());
+            if (!p.getAddress().equals(""))
+                model.add(person, VCARD.Street, p.getAddress());
+            if (!p.getZip().equals(""))
+                model.add(person, VCARD.Pcode, p.getZip());
+            if (!p.getCity().equals(""))
+                model.add(person, VCARD.Locality, p.getCity());
+            if (!p.getCountry().equals(""))
+                model.add(person, VCARD.Country, p.getCountry());
+
+            if(!p.getEmployer().equals("")) {
+                Resource employer = ResourceFactory.createResource(nsOrg + p.getEmployer());
+                model.add(employer, VCARD.Orgname, p.getEmployer());
+                Property employerProp = model.createProperty(nsFoaf + "employer");
+                model.add(person, employerProp, employer);
+            }
+            if(!p.getOwnsOrg().equals("")) {
+                Resource ownsOrg = ResourceFactory.createResource(nsOrg + p.getOwnsOrg());
+                model.add(ownsOrg, VCARD.Orgname, p.getOwnsOrg());
+                Property ownsOrgProp = model.createProperty(nsFoaf + "ownsOrg");
+                model.add(person, ownsOrgProp, ownsOrg);
+            }
+
+            System.out.println(model.toString());
+
+            RDFDataMgr.write(System.out, dataset, Lang.TRIG);
+
+            dataset.commit();
+        } finally {
+            dataset.end();
+            dataset.close();
+        }
+    }
+
+    //TODO: org-update/delete
+    private static void updatePerson(Person oldP, Person newP) {
+        dataset = TDBFactory.assembleDataset(
+                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+
+        dataset.begin(ReadWrite.WRITE);
+
+        String deleteString = "";
+        if(oldP.getBirthdate() != newP.getBirthdate())
+            deleteString += "person:" + newP.getName() + " vcard:BDAY \"" + oldP.getBirthdate().toString() + "\". ";
+        if(!oldP.getGender().toString().equals(newP.getGender().toString()))
+            deleteString += "person:" + newP.getName() + " foaf:gender \"" + oldP.getGender().toString() + "\". ";
+        if(!oldP.getCountry().equals(newP.getCountry()))
+            deleteString += "person:" + newP.getName() + " vcard:Country \"" + oldP.getCountry() + "\". ";
+        if(!oldP.getCity().equals(newP.getCity()))
+            deleteString += "person:" + newP.getName() + " vcard:Locality \"" + oldP.getCity() + "\". ";
+        if(!oldP.getZip().equals(newP.getZip()))
+            deleteString += "person:" + newP.getName() + " vcard:Pcode \"" + oldP.getZip() + "\". ";
+        if(!oldP.getAddress().equals(newP.getAddress()))
+            deleteString += "person:" + newP.getName() + " vcard:Street \"" + oldP.getAddress() + "\". ";
+        if(!oldP.getEmployer().equals(newP.getEmployer()))
+            deleteString += "person:" + newP.getName() + " foaf:employer org:" + oldP.getEmployer() + ". ";
+        if(!oldP.getOwnsOrg().equals(newP.getOwnsOrg()))
+            deleteString += "person:" + newP.getName() + " foaf:ownsOrg org:" + oldP.getOwnsOrg() + ". ";
+
+        try {
+            String inputString =
+                    "PREFIX org: <http://www.example/org>\n" +
+                            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                            "PREFIX person: <http://www.example/person>\n" +
+                            "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>\n" +
+                            "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                            "DELETE DATA {" + deleteString + "}";
 
             UpdateRequest update = UpdateFactory.create(inputString);
             UpdateAction.execute(update, dataset);
@@ -76,44 +155,42 @@ public class MainTestRDF {
             dataset.end();
             dataset.close();
         }
+
+        insertPerson(newP);
     }
 
-    private static void updatePerson(String name, String att, String newValue, String oldValue) {
+    private static void deletePerson(Person p) {
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
 
         dataset.begin(ReadWrite.WRITE);
+
+        String deleteString = "person:" + p.getName() + " foaf:name \"" + p.getName() + "\". ";
+        if(p.getBirthdate() != null)
+            deleteString += "person:" + p.getName() + " vcard:BDAY \"" + p.getBirthdate().toString() + "\". ";
+        if(!p.getGender().toString().equals(""))
+            deleteString += "person:" + p.getName() + " foaf:gender \"" + p.getGender().toString() + "\". ";
+        if(!p.getCountry().equals(""))
+            deleteString += "person:" + p.getName() + " vcard:Country \"" + p.getCountry() + "\". ";
+        if(!p.getCity().equals(""))
+            deleteString += "person:" + p.getName() + " vcard:Locality \"" + p.getCity() + "\". ";
+        if(!p.getZip().equals(""))
+            deleteString += "person:" + p.getName() + " vcard:Pcode \"" + p.getZip() + "\". ";
+        if(!p.getAddress().equals(""))
+            deleteString += "person:" + p.getName() + " vcard:Street \"" + p.getAddress() + "\". ";
+        if(!p.getEmployer().equals(""))
+            deleteString += "person:" + p.getName() + " foaf:employer org:" + p.getEmployer() + ". ";
+        if(!p.getOwnsOrg().equals(""))
+            deleteString += "person:" + p.getName() + " foaf:ownsOrg org:" + p.getOwnsOrg() + ". ";
+
         try {
-            String inputString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                    "PREFIX : <http://example.org/> " +
-                    "DELETE DATA {" +
-                    ":" + name + " :" + att + " " + (att.equals("age") ? Integer.parseInt(oldValue) : ("\"" + oldValue + "\"")) + ".}; " +
-                    "INSERT DATA {" +
-                    ":" + name + " :" + att + " " + (att.equals("age") ? Integer.parseInt(newValue) : ("\"" + newValue + "\"")) + ".} ";
-
-            UpdateRequest update = UpdateFactory.create(inputString);
-            UpdateAction.execute(update, dataset);
-
-            RDFDataMgr.write(System.out, dataset, Lang.TRIG);
-
-            dataset.commit();
-        } finally {
-            dataset.end();
-            dataset.close();
-        }
-    }
-
-    private static void deletePerson(String name) {
-        dataset = TDBFactory.assembleDataset(
-                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
-
-        dataset.begin(ReadWrite.WRITE);
-        try {
-            String inputString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                    "PREFIX : <http://example.org/> " +
-                    "DELETE { ?person ?property ?value } \n" +
-                    "WHERE \n" +
-                    " { ?person ?property ?value ; <http://example.org> \"" + name + "\" } ";
+            String inputString =
+                    "PREFIX org: <http://www.example/org>\n" +
+                            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                            "PREFIX person: <http://www.example/person>\n" +
+                            "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>\n" +
+                            "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                            "DELETE DATA {" + deleteString + "}";
 
             UpdateRequest update = UpdateFactory.create(inputString);
             UpdateAction.execute(update, dataset);
@@ -168,7 +245,8 @@ public class MainTestRDF {
 
                 pListItem = new Person();
                 pListItem.setName(qs.getResource("a").getLocalName());
-                pListItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
+                //TODO: age changed to birthdate
+                pListItem.setBirthdate(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
 
                 listPersonen.add(pListItem);
             }
