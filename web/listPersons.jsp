@@ -84,10 +84,10 @@
                  ) {
                 out.println("<div class=\"divTableRow\">" +
                             "<div class=\"divTableCell\">" + item.getName() + "</div>" +
-                            "<div class=\"divTableCell\">&nbsp;</div>" +
-                            "<div class=\"divTableCell\">" + item.getAge() + "</div>" +
-                            "<div class=\"divTableCell\">&nbsp;</div>" +
-                            "<div class=\"divTableCell\">&nbsp;</div>" +
+                            "<div class=\"divTableCell\">" + item.getGender().toString() + "</div>" +
+                            //"<div class=\"divTableCell\">" + item + "</div>" +
+                            "<div class=\"divTableCell\">"+ item.getAddress() + ", " + item.getZip() + " " + item.getCity() + ", " + item.getCountry() + "</div>" +
+                            "<div class=\"divTableCell\">" + item.getCountry() + "</div>" +
                             "<div class=\"divTableCell\">" +
                                 "<button type=\"button\" name=\"viewPerson\" value=\"" + item.getName() + "\" onclick=\"location.href='add_modifyPerson.jsp?viewPerson=" + item.getName() + "'\">View</button>" +
                                 "<button type=\"button\" name=\"changePerson\" value=\"" + item.getName() + "\" onclick=\"location.href='add_modifyPerson.jsp?changePerson=" + item.getName() + "'\">Modify</button>" +

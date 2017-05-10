@@ -20,41 +20,66 @@
     <%
 
 
-        boolean modifyPerson = request.getParameter("changePerson") != null;
+        boolean viewPerson = request.getParameter("changePerson") != null;
         boolean addPerson = request.getParameter("addPerson") != null;
-        String idModifyPerson = "";
+        boolean modifyPerson = request.getParameter("modifyPerson") != null;
 
+        Person personItem = new Person();
         if (addPerson){
-            Person personItem = new Person();
-            personItem.setName(request.getParameter("name"));
-            String gender = request.getParameter("gender");
-            if(gender == "m"){
-                personItem.setGender(Gender.MALE);
-            } else {
-                personItem.setGender(Gender.FEMALE);
-            }
+            personItem = generatePersonItemFromForm(request);
             MainTestRDF.insertPerson(personItem);
-
+            personItem = new Person();
             out.println("Person: " + request.getParameter("name") + " wurde hinzugefügt!");
         }
 
-        if (modifyPerson){
-            idModifyPerson = request.getParameter("changePerson");
+        if(modifyPerson){
+
+            personItem = generatePersonItemFromForm(request);
+                //UpdatePerson-Method Request MainTestRDF
         }
 
+        if (viewPerson){
+            personItem = MainTestRDF.getPerson(request.getParameter("changePerson"));
+            out.print(personItem.getName());
+        }
+
+
+
+    %>
+
+    <%!
+        private Person generatePersonItemFromForm(HttpServletRequest request){
+            Person pers = new Person();
+            pers.setName(request.getParameter("name"));
+            String gender = request.getParameter("gender");
+            if(gender.compareToIgnoreCase("m") == 0){
+                pers.setGender(Gender.MALE);
+            } else {
+                pers.setGender(Gender.FEMALE);
+            }
+            pers.setAddress(request.getParameter("street"));
+            pers.setCity(request.getParameter("city"));
+            pers.setCountry(request.getParameter("country"));
+            pers.setEmployer(request.getParameter("employer"));
+            int zip = Integer.parseInt(request.getParameter("zipcode"));
+
+            pers.setZip(zip);
+
+            return pers;
+        }
     %>
 
     <div class="divTable">
         <div class="divTableBody">
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">name:</div>
-                <div class="divTableCell"><input type="text" <% if(modifyPerson){out.println("disabled");}  %> name="name" value="<% out.println(idModifyPerson); %>"></div>
+                <div class="divTableCell"><input type="text" <% if(viewPerson){out.println("disabled");}  %> name="name" value="<% out.println(personItem.getName()); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Gender:</div>
-                <div class="divTableCell"><select>
-                    <option value="m" name="gender">M</option>
-                    <option value="w" name="gender">W</option>
+                <div class="divTableCell"><select name="gender">
+                    <option value="m" <% if(personItem.getGender() == Gender.MALE){out.println("selected");}  %> >M</option>
+                    <option value="w" <% if(personItem.getGender() == Gender.FEMALE){out.println("selected");}  %>>W</option>
                 </select></div>
             </div>
             <div class="divTableRow">
@@ -63,23 +88,23 @@
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Street:</div>
-                <div class="divTableCell"><input type="text" name="street"></div>
+                <div class="divTableCell"><input type="text" name="street" value="<% out.println(personItem.getAddress()); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">ZIP Code:</div>
-                <div class="divTableCell"><input type="text" name="zipcode"></div>
+                <div class="divTableCell"><input type="text" name="zipcode" value="<% out.println(personItem.getZip()); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">City:</div>
-                <div class="divTableCell"><input type="text" name="zipcode"></div>
+                <div class="divTableCell"><input type="text" name="city" value="<% out.println(personItem.getCity()); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Country:</div>
-                <div class="divTableCell"><input type="text" name="zipcode"></div>
+                <div class="divTableCell"><input type="text" name="country" value="<% out.println(personItem.getCountry()); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Employer:</div>
-                <div class="divTableCell"><input type="text" name="employer"></div>
+                <div class="divTableCell"><input type="text" name="employer" value="<% out.println(personItem.getEmployer()); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">&nbsp;</div>
@@ -89,11 +114,11 @@
     </div>
 
     <%
-        if (!modifyPerson){
+        if (!viewPerson){
             out.println("<input type=\"submit\" name=\"addPerson\" value=\"Add\">");
         }
         else {
-            out.println("<input type=\"button\" value =\"Modify\" onclick=\"location.href='listPersons.jsp'\" >");
+            out.println("<input type=\"button\" value =\"Modify\" onclick=\"location.href='add_modifyPerson.jsp?modifyPerson=" + personItem.getName() + "'\" >");
         }
     %>
 
