@@ -40,7 +40,7 @@ public class MainTestRDF {
         Person p4 = new Person("Max", Gender.MALE, new Date(), "Austria", "Linz", "Musterstraße", "4020", "JKU", "");
 
         insertPerson(p1);
-        //insertPerson(p2);
+        insertPerson(p2);
         //insertPerson(p3);
         //insertPerson(p4);
 
@@ -48,6 +48,8 @@ public class MainTestRDF {
 
         updatePerson(p1, up1);
         deletePerson(up1);
+
+        getPersons();
     }
 
     // todo: unternehmer-eigentümer: Person p, Org-name
@@ -256,22 +258,36 @@ public class MainTestRDF {
 
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+        String nsPerson = "http://www.example/person";
+        String nsOrg = "http://www.example/org";
+        String nsRDF = RDF.getURI();
+        String nsFoaf = FOAF.getURI();
+        String nsVcard = VCARD.getURI();
+
         List<Person> listPersonen = new ArrayList<Person>();
         try{
             dataset.begin(ReadWrite.READ);
 
             Model model = dataset.getDefaultModel();
 
-            String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                    "PREFIX : <http://example.org/> " +
-                    "SELECT * WHERE {?a a :Person;" +
-                    ":age ?b;" +
-                    ":address ?c;" +
-                    ":zip ?d;" +
-                    ":city ?e;" +
-                    ":address ?f;" +
-                    ":employer ?g;" +
-                    ":gender ?h. }";
+            String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                    "SELECT * WHERE {?a rdf:type foaf:Person}" ;
+
+                    /*+ a foaf:Person.
+                    //":age ?b;" +
+                    "vcard:Street ?c;" +
+                    "vcard:Pcode ?d;" +
+                    "vcard:Locality ?e;" +
+                    "foaf:employer ?g;" +
+                    "foaf:gender ?h. }";
+                    "PREFIX org: <http://www.example/org>\n" +
+                    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                    "PREFIX person: <http://www.example/person>\n" +
+                    "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>\n" +
+                    "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                    */
+
             QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
             ResultSet rs = qExec.execSelect() ;
             //ResultSetFormatter.out(rs) ;
@@ -280,26 +296,34 @@ public class MainTestRDF {
 
             while (rs.hasNext()){
                 QuerySolution qs = rs.next();
-                System.out.print(qs.getResource("a").getLocalName() + " " + qs.getLiteral("b").getString());
-                System.out.print(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getString());
-
+                //System.out.print(qs.getResource("a").getLocalName() + " " + qs.getLiteral("b").getString());
+                //System.out.print(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getString());
 
                 //System.out.print(qs.getResource("a").listProperties());
 
                 pListItem = new Person();
-                pListItem.setName(qs.getResource("a").getLocalName());
-                String gender = qs.getResource("a").getProperty(model.getProperty("http://example.org/gender")).getString();
-                if(gender.compareToIgnoreCase("male") == 0){
-                    pListItem.setGender(Gender.MALE);
-                } else {
-                    pListItem.setGender(Gender.FEMALE);
+                Statement stmt = qs.getResource("a").getProperty(model.getProperty(nsFoaf + "name"));
+                if (stmt != null){
+                    pListItem.setName(stmt.getString());
                 }
 
+                stmt = qs.getResource("a").getProperty(model.getProperty(nsFoaf + "gender"));
+                if (stmt != null) {
+                    String gender = stmt.getString();
+
+                    if(gender.compareToIgnoreCase("male") == 0){
+                        pListItem.setGender(Gender.MALE);
+                    } else {
+                        pListItem.setGender(Gender.FEMALE);
+                    }
+                }
+
+
                 //pListItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
-                pListItem.setCity(qs.getResource("a").getProperty(model.getProperty("http://example.org/city")).getString());
-                pListItem.setAddress(qs.getResource("a").getProperty(model.getProperty("http://example.org/address")).getString());
+                //pListItem.setCity(qs.getResource("a").getProperty(model.getProperty("http://example.org/city")).getString());
+                //pListItem.setAddress(qs.getResource("a").getProperty(model.getProperty("http://example.org/address")).getString());
                 //pListItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
-                pListItem.setCountry(qs.getResource("a").getProperty(model.getProperty("http://example.org/country")).getString());
+                //pListItem.setCountry(qs.getResource("a").getProperty(model.getProperty(nsVcard + "/Country")).getString());
 
                 listPersonen.add(pListItem);
             }
