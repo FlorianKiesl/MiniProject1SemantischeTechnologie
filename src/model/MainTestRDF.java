@@ -214,6 +214,11 @@ public class MainTestRDF {
 
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+        String nsPerson = "http://www.example/person";
+        String nsOrg = "http://www.example/org";
+        String nsRDF = RDF.getURI();
+        String nsFoaf = FOAF.getURI();
+        String nsVcard = VCARD.getURI();
         Person personItem = new Person();
 
         try {
@@ -229,7 +234,23 @@ public class MainTestRDF {
 
 
             personItem = new Person();
-            personItem.setName(qs.getResource("a").getLocalName());
+            Statement stmt = qs.getResource("a").getProperty(model.getProperty(nsFoaf + "name"));
+            if (stmt != null){
+                personItem.setName(stmt.getString());
+            }
+
+            stmt = qs.getResource("a").getProperty(model.getProperty(nsFoaf + "gender"));
+            if (stmt != null) {
+                String gender = stmt.getString();
+
+                if(gender.compareToIgnoreCase("male") == 0){
+                    personItem.setGender(Gender.MALE);
+                } else {
+                    personItem.setGender(Gender.FEMALE);
+                }
+            }
+
+            /*personItem.setName(qs.getResource("a").getLocalName());
             String gender = qs.getResource("a").getProperty(model.getProperty("http://example.org/gender")).getString();
             if(gender.compareToIgnoreCase("male") == 0){
                 personItem.setGender(Gender.MALE);
@@ -241,7 +262,7 @@ public class MainTestRDF {
             personItem.setAddress(qs.getResource("a").getProperty(model.getProperty("http://example.org/address")).getString());
             //personItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
             personItem.setCountry(qs.getResource("a").getProperty(model.getProperty("http://example.org/country")).getString());
-
+*/
 
             ResultSetFormatter.out(rs) ;
 

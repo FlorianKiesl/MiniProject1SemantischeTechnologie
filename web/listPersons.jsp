@@ -85,7 +85,7 @@
                 out.println("<div class=\"divTableRow\">" +
                             "<div class=\"divTableCell\">" + item.getName() + "</div>" +
                             "<div class=\"divTableCell\">" + item.getGender().toString() + "</div>" +
-                            //"<div class=\"divTableCell\">" + item + "</div>" +
+                            "<div class=\"divTableCell\">" + item.getBirthdate().toString() + "</div>" +
                             "<div class=\"divTableCell\">"+ item.getAddress() + ", " + item.getZip() + " " + item.getCity() + ", " + item.getCountry() + "</div>" +
                             "<div class=\"divTableCell\">" + item.getCountry() + "</div>" +
                             "<div class=\"divTableCell\">" +

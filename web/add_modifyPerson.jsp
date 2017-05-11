@@ -61,9 +61,9 @@
             pers.setCity(request.getParameter("city"));
             pers.setCountry(request.getParameter("country"));
             pers.setEmployer(request.getParameter("employer"));
-            int zip = Integer.parseInt(request.getParameter("zipcode"));
+            //int zip = Integer.parseInt(request.getParameter("zipcode"));
 
-            pers.setZip(zip);
+            //pers.setZip(zip);
 
             return pers;
         }
