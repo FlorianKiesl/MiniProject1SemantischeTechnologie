@@ -2,7 +2,8 @@
 <%@ page import="model.Person" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="model.MainTestRDF" %>
-<%@ page import="sun.applet.Main" %><%--
+<%@ page import="sun.applet.Main" %>
+<%@ page import="java.text.SimpleDateFormat" %><%--
   Created by IntelliJ IDEA.
   User: Florian
   Date: 30/04/2017
@@ -18,7 +19,7 @@
 <body>
 
 <%
-    MainTestRDF.getPersons();
+    //MainTestRDF.getPersons();
 
     List<Person> listPerson = MainTestRDF.getPersons();
 
@@ -74,20 +75,23 @@
             <div class="divTableHead">Date of Birth</div>
             <div class="divTableHead">Address</div>
             <div class="divTableHead">Employer</div>
+            <div class="divTableHead">OwnsOrg</div>
             <div class="divTableHead">Modify/Delete</div>
         </div>
     </div>
 
     <div class="divTableBody">
         <%
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             for (Person item:listPerson
                  ) {
                 out.println("<div class=\"divTableRow\">" +
                             "<div class=\"divTableCell\">" + item.getName() + "</div>" +
                             "<div class=\"divTableCell\">" + item.getGender().toString() + "</div>" +
-                            "<div class=\"divTableCell\">" + item.getBirthdate().toString() + "</div>" +
+                            "<div class=\"divTableCell\">" + sdf.format(item.getBirthdate()) + "</div>" +
                             "<div class=\"divTableCell\">"+ item.getAddress() + ", " + item.getZip() + " " + item.getCity() + ", " + item.getCountry() + "</div>" +
-                            "<div class=\"divTableCell\">" + item.getCountry() + "</div>" +
+                            "<div class=\"divTableCell\">" + item.getEmployer() + "</div>" +
+                            "<div class=\"divTableCell\">" + item.getOwnsOrg() + "</div>" +
                             "<div class=\"divTableCell\">" +
                                 "<button type=\"button\" name=\"viewPerson\" value=\"" + item.getName() + "\" onclick=\"location.href='add_modifyPerson.jsp?viewPerson=" + item.getName() + "'\">View</button>" +
                                 "<button type=\"button\" name=\"changePerson\" value=\"" + item.getName() + "\" onclick=\"location.href='add_modifyPerson.jsp?changePerson=" + item.getName() + "'\">Modify</button>" +

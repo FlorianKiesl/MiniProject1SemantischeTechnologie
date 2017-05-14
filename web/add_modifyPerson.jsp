@@ -1,6 +1,12 @@
 <%@ page import="model.MainTestRDF" %>
 <%@ page import="model.Person" %>
-<%@ page import="model.Gender" %><%--
+<%@ page import="model.Gender" %>
+<%@ page import="model.WikiRDFQuery" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.ParseException" %>
+<%@ page import="java.util.Map" %><%--
   Created by IntelliJ IDEA.
   User: Florian
   Date: 30/04/2017
@@ -19,6 +25,8 @@
 <form action="add_modifyPerson.jsp" method="post">
     <%
 
+        Map<String,String> countryList = WikiRDFQuery.getCountries();
+        List<String> companyList = MainTestRDF.getCompanies();
 
         boolean viewPerson = request.getParameter("changePerson") != null;
         boolean addPerson = request.getParameter("addPerson") != null;
@@ -61,9 +69,15 @@
             pers.setCity(request.getParameter("city"));
             pers.setCountry(request.getParameter("country"));
             pers.setEmployer(request.getParameter("employer"));
-            //int zip = Integer.parseInt(request.getParameter("zipcode"));
-
-            //pers.setZip(zip);
+            pers.setZip(request.getParameter("zipcode"));
+            pers.setOwnsOrg(request.getParameter("OwnsCompany"));
+            String birthString = request.getParameter("dateofbirth").toString();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            try{
+                pers.setBirthdate(sdf.parse(request.getParameter("dateofbirth").toString()));
+            } catch (ParseException exc) {
+                System.out.println(exc.getMessage());
+            }
 
             return pers;
         }
@@ -96,15 +110,48 @@
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">City:</div>
-                <div class="divTableCell"><input type="text" name="city" value="<% out.println(personItem.getCity()); %>"></div>
+                <div class="divTableCell">
+                    <input type="text" name="city" value="<% out.println(personItem.getCity()); %>">
+                </div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Country:</div>
-                <div class="divTableCell"><input type="text" name="country" value="<% out.println(personItem.getCountry()); %>"></div>
+                <div class="divTableCell">
+                    <select name="country">
+                    <%
+                        for (Map.Entry<String, String> country : countryList.entrySet()){
+                            out.println("<option value=\"" + country.getKey()  + "\">" + country.getValue() + "</option>");
+                        }
+                    %>
+
+                    </select>
+                </div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Employer:</div>
-                <div class="divTableCell"><input type="text" name="employer" value="<% out.println(personItem.getEmployer()); %>"></div>
+                <div class="divTableCell">
+                    <input type="text" list="existingCompanies" name="employer" value="<% out.println(personItem.getEmployer()); %>">
+                    <datalist id="existingCompanies">
+                        <%
+                            for (String company: companyList){
+                                out.println("<option value=\"" + company  + "\">");
+                            }
+                        %>
+                    </datalist>
+                </div>
+            </div>
+            <div class="divTableRow">
+                <div class="divTableCellFirstColumn">OwnsCompany:</div>
+                <div class="divTableCell">
+                    <input type="text" list="ownsCompanies" name="OwnsCompany" value="<% out.println(personItem.getOwnsOrg()); %>">
+                    <datalist id="ownsCompanies">
+                        <%
+                            for (String company: companyList){
+                                out.println("<option value=\"" + company  + "\">");
+                            }
+                        %>
+                    </datalist>
+                </div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">&nbsp;</div>

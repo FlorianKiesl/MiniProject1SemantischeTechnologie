@@ -12,6 +12,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.VCARD;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,9 +37,18 @@ public class MainTestRDF {
             dataset.end();
         }
 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date newBirthdate = null;
+        try {
+            newBirthdate = sdf.parse("2014-11-12");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
         Person p1 = new Person("David", Gender.MALE, null, "Austria", "Linz", "Reuchlinstraße", "4020", "JKU", "SomeOrg");
-        Person p2 = new Person("Florian", Gender.MALE, new Date(), "Austria", "Linz", "Hauptstraße", "4020", "JKU", "SomeOrg");
-        Person p3 = new Person("Christian", Gender.MALE, new Date(), "Austria", "Linz", "Hauptstraße", "4020", "JKU", "");
+        Person p2 = new Person("Florian", Gender.MALE, newBirthdate , "Austria", "Linz", "Hauptstraße", "4020", "JKU", "SomeOrg");
+        Person p3 = new Person("Christian", Gender.MALE, newBirthdate, "Austria", "Linz", "Hauptstraße", "4020", "JKU", "");
         Person p4 = new Person("Max", Gender.MALE, new Date(), "Austria", "Linz", "Musterstraße", "4020", "JKU", "");
 
         insertPerson(p1);
@@ -44,12 +56,15 @@ public class MainTestRDF {
         //insertPerson(p3);
         //insertPerson(p4);
 
+        getCompanies();
+
         Person up1 = new Person("David", Gender.MALE, null, "USA", "Linz", "Reuchlinstraße", "4020", "JKU", "");
 
         updatePerson(p1, up1);
         deletePerson(up1);
 
         getPersons();
+        WikiRDFQuery.getCountries();
     }
 
     // todo: unternehmer-eigentümer: Person p, Org-name
@@ -317,21 +332,21 @@ public class MainTestRDF {
 
             while (rs.hasNext()){
                 QuerySolution qs = rs.next();
+                Resource personResource = qs.getResource("a");
                 //System.out.print(qs.getResource("a").getLocalName() + " " + qs.getLiteral("b").getString());
                 //System.out.print(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getString());
 
                 //System.out.print(qs.getResource("a").listProperties());
 
                 pListItem = new Person();
-                Statement stmt = qs.getResource("a").getProperty(model.getProperty(nsFoaf + "name"));
+                Statement stmt = personResource.getProperty(model.getProperty(nsFoaf + "name"));
                 if (stmt != null){
                     pListItem.setName(stmt.getString());
                 }
 
-                stmt = qs.getResource("a").getProperty(model.getProperty(nsFoaf + "gender"));
+                stmt = personResource.getProperty(model.getProperty(nsFoaf + "gender"));
                 if (stmt != null) {
                     String gender = stmt.getString();
-
                     if(gender.compareToIgnoreCase("male") == 0){
                         pListItem.setGender(Gender.MALE);
                     } else {
@@ -339,12 +354,42 @@ public class MainTestRDF {
                     }
                 }
 
+                stmt = personResource.getProperty(model.getProperty(nsVcard + "BDAY"));
+                if (stmt != null) {
+                    DateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
+                    Date birthday =  df.parse(stmt.getString());
+                    pListItem.setBirthdate(birthday);
+                }
 
-                //pListItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
-                //pListItem.setCity(qs.getResource("a").getProperty(model.getProperty("http://example.org/city")).getString());
-                //pListItem.setAddress(qs.getResource("a").getProperty(model.getProperty("http://example.org/address")).getString());
-                //pListItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
-                //pListItem.setCountry(qs.getResource("a").getProperty(model.getProperty(nsVcard + "/Country")).getString());
+                stmt = personResource.getProperty(model.getProperty(nsVcard + "Country"));
+                if (stmt != null){
+                    pListItem.setCountry(stmt.getString());
+                }
+
+                stmt = personResource.getProperty(model.getProperty(nsVcard + "Locality"));
+                if (stmt != null){
+                    pListItem.setCity(stmt.getString());
+                }
+
+                stmt = personResource.getProperty(model.getProperty(nsVcard + "Street"));
+                if (stmt != null){
+                    pListItem.setAddress(stmt.getString());
+                }
+
+                stmt = personResource.getProperty(model.getProperty(nsVcard + "Pcode"));
+                if (stmt != null){
+                    pListItem.setZip(stmt.getString());
+                }
+
+                stmt = personResource.getProperty(model.getProperty(nsFoaf + "employer"));
+                if (stmt != null){
+                    pListItem.setEmployer(stmt.getResource().getProperty(model.getProperty(nsVcard + "Orgname")).getString());
+                }
+
+                stmt = personResource.getProperty(model.getProperty(nsFoaf + "ownsOrg"));
+                if (stmt != null){
+                    pListItem.setOwnsOrg(stmt.getResource().getProperty(model.getProperty(nsVcard + "Orgname")).getString());
+                }
 
                 listPersonen.add(pListItem);
             }
@@ -362,5 +407,50 @@ public class MainTestRDF {
         }
 
         return listPersonen;
+    }
+
+
+    public static List<String> getCompanies(){
+
+        dataset = TDBFactory.assembleDataset(
+                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+        String nsPerson = "http://www.example/person";
+        String nsOrg = "http://www.example/org";
+        String nsRDF = RDF.getURI();
+        String nsFoaf = FOAF.getURI();
+        String nsVcard = VCARD.getURI();
+
+        List<String> list = new ArrayList<String>();
+        try {
+            dataset.begin(ReadWrite.READ);
+
+            Model model = dataset.getDefaultModel();
+
+            String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                    "SELECT DISTINCT ?e WHERE {?a rdf:type foaf:Person; " +
+                        "foaf:employer ?e.}";
+
+            QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
+            ResultSet rs = qExec.execSelect() ;
+            //ResultSetFormatter.out(rs) ;
+            while (rs.hasNext()) {
+                QuerySolution qs = rs.next();
+                Resource employer = qs.getResource("e");
+                list.add(employer.getProperty(model.getProperty(nsVcard + "Orgname")).getString());
+            }
+
+
+        }
+        catch (Exception exc){
+            System.out.print(exc);
+        }
+
+        finally {
+            dataset.end();
+            dataset.close();
+        }
+
+        return list;
     }
 }

@@ -50,7 +50,7 @@ public class Person {
         return birthdate;
     }
 
-    public void setBirthdate(int age) {
+    public void setBirthdate(Date birthdate) {
         this.birthdate = birthdate;
     }
 
