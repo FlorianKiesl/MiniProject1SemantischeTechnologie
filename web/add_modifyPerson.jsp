@@ -33,6 +33,8 @@
         boolean modifyPerson = request.getParameter("modifyPerson") != null;
 
         Person personItem = new Person();
+        Person personBeforeModifying = new Person();
+        Person personAfterModifying = new Person();
         if (addPerson){
             personItem = generatePersonItemFromForm(request);
             MainTestRDF.insertPerson(personItem);
@@ -41,13 +43,14 @@
         }
 
         if(modifyPerson){
+            personBeforeModifying = MainTestRDF.getPerson(request.getParameter("name"));
+            personAfterModifying = generatePersonItemFromForm(request);
+            MainTestRDF.updatePerson(personBeforeModifying, personAfterModifying);
 
-            personItem = generatePersonItemFromForm(request);
-                //UpdatePerson-Method Request MainTestRDF
         }
 
         if (viewPerson){
-            personItem = MainTestRDF.getPerson(request.getParameter("changePerson"));
+            personBeforeModifying = MainTestRDF.getPerson(request.getParameter("changePerson"));
             out.print(personItem.getName());
         }
 
@@ -87,31 +90,33 @@
         <div class="divTableBody">
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">name:</div>
-                <div class="divTableCell"><input type="text" <% if(viewPerson){out.println("disabled");}  %> name="name" value="<% out.println(personItem.getName()); %>"></div>
+                <div class="divTableCell">
+                    <input type="text" <% if(viewPerson){out.print("disabled");}  %> name="name" value="<% out.print(personBeforeModifying.getName()); %>">
+                </div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Gender:</div>
                 <div class="divTableCell"><select name="gender">
-                    <option value="m" <% if(personItem.getGender() == Gender.MALE){out.println("selected");}  %> >M</option>
-                    <option value="w" <% if(personItem.getGender() == Gender.FEMALE){out.println("selected");}  %>>W</option>
+                    <option value="m" <% if(personBeforeModifying.getGender() == Gender.MALE){out.print("selected");}  %> >M</option>
+                    <option value="w" <% if(personBeforeModifying.getGender() == Gender.FEMALE){out.print("selected");}  %>>W</option>
                 </select></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Date of Birth:</div>
-                <div class="divTableCell"><input type="date" name="dateofbirth"></div>
+                <div class="divTableCell"><input type="date" name="dateofbirth" value="<% SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); out.print(sdf.format(personBeforeModifying.getBirthdate())); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Street:</div>
-                <div class="divTableCell"><input type="text" name="street" value="<% out.println(personItem.getAddress()); %>"></div>
+                <div class="divTableCell"><input type="text" name="street" value="<% out.print(personBeforeModifying.getAddress()); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">ZIP Code:</div>
-                <div class="divTableCell"><input type="text" name="zipcode" value="<% out.println(personItem.getZip()); %>"></div>
+                <div class="divTableCell"><input type="text" name="zipcode" value="<% out.print(personBeforeModifying.getZip()); %>"></div>
             </div>
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">City:</div>
                 <div class="divTableCell">
-                    <input type="text" name="city" value="<% out.println(personItem.getCity()); %>">
+                    <input type="text" name="city" value="<% out.print(personBeforeModifying.getCity()); %>">
                 </div>
             </div>
             <div class="divTableRow">
@@ -120,7 +125,12 @@
                     <select name="country">
                     <%
                         for (Map.Entry<String, String> country : countryList.entrySet()){
-                            out.println("<option value=\"" + country.getKey()  + "\">" + country.getValue() + "</option>");
+                            if(personBeforeModifying.getCountry().compareTo(country.getKey()) == 0){
+                                out.println("<option value=\"" + country.getKey()  + "\" selected>" + country.getValue() + "</option>");
+                            } else {
+                                out.println("<option value=\"" + country.getKey()  + "\">" + country.getValue() + "</option>");
+                            }
+
                         }
                     %>
 
@@ -130,11 +140,11 @@
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">Employer:</div>
                 <div class="divTableCell">
-                    <input type="text" list="existingCompanies" name="employer" value="<% out.println(personItem.getEmployer()); %>">
+                    <input type="text" list="existingCompanies" name="employer" value="<% out.print(personBeforeModifying.getEmployer()); %>">
                     <datalist id="existingCompanies">
                         <%
                             for (String company: companyList){
-                                out.println("<option value=\"" + company  + "\">");
+                                out.print("<option value=\"" + company  + "\">");
                             }
                         %>
                     </datalist>
@@ -143,11 +153,11 @@
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">OwnsCompany:</div>
                 <div class="divTableCell">
-                    <input type="text" list="ownsCompanies" name="OwnsCompany" value="<% out.println(personItem.getOwnsOrg()); %>">
+                    <input type="text" list="ownsCompanies" name="OwnsCompany" value="<% out.print(personBeforeModifying.getOwnsOrg()); %>">
                     <datalist id="ownsCompanies">
                         <%
                             for (String company: companyList){
-                                out.println("<option value=\"" + company  + "\">");
+                                out.print("<option value=\"" + company  + "\">");
                             }
                         %>
                     </datalist>
@@ -162,10 +172,10 @@
 
     <%
         if (!viewPerson){
-            out.println("<input type=\"submit\" name=\"addPerson\" value=\"Add\">");
+            out.print("<input type=\"submit\" name=\"addPerson\" value=\"Add\">");
         }
         else {
-            out.println("<input type=\"button\" value =\"Modify\" onclick=\"location.href='add_modifyPerson.jsp?modifyPerson=" + personItem.getName() + "'\" >");
+            out.print("<input type=\"submit\" name=\"modifyPerson\" value =\"Modify\" >");
         }
     %>
 

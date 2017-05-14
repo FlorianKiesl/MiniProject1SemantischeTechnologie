@@ -129,7 +129,7 @@ public class MainTestRDF {
     }
 
     //TODO: org-update/delete
-    private static void updatePerson(Person oldP, Person newP) {
+    public static void updatePerson(Person oldP, Person newP) {
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
 
@@ -176,7 +176,7 @@ public class MainTestRDF {
         insertPerson(newP);
     }
 
-    private static void deletePerson(Person p) {
+    public static void deletePerson(Person p) {
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
 
@@ -229,57 +229,26 @@ public class MainTestRDF {
 
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
-        String nsPerson = "http://www.example/person";
-        String nsOrg = "http://www.example/org";
-        String nsRDF = RDF.getURI();
-        String nsFoaf = FOAF.getURI();
-        String nsVcard = VCARD.getURI();
+
         Person personItem = new Person();
 
         try {
             dataset.begin(ReadWrite.READ);
             Model model = dataset.getDefaultModel();
-            String query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+            String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                     "PREFIX : <http://example.org/> " +
-                    "SELECT * WHERE {?a a :Person;" +
-                                    "FILTER(?a = :" + name + ").}";
+                    "SELECT * WHERE {?a rdf:type foaf:Person;" +
+                                    "foaf:name ?n; " +
+                                    "FILTER(?n = \"" + name + "\").}";
             QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
             ResultSet rs = qExec.execSelect();
+            //ResultSetFormatter.out(rs) ;
             QuerySolution qs = rs.next();
-
-
-            personItem = new Person();
-            Statement stmt = qs.getResource("a").getProperty(model.getProperty(nsFoaf + "name"));
-            if (stmt != null){
-                personItem.setName(stmt.getString());
+            if (qs != null){
+                personItem = getPersonItem(model, qs);
             }
 
-            stmt = qs.getResource("a").getProperty(model.getProperty(nsFoaf + "gender"));
-            if (stmt != null) {
-                String gender = stmt.getString();
-
-                if(gender.compareToIgnoreCase("male") == 0){
-                    personItem.setGender(Gender.MALE);
-                } else {
-                    personItem.setGender(Gender.FEMALE);
-                }
-            }
-
-            /*personItem.setName(qs.getResource("a").getLocalName());
-            String gender = qs.getResource("a").getProperty(model.getProperty("http://example.org/gender")).getString();
-            if(gender.compareToIgnoreCase("male") == 0){
-                personItem.setGender(Gender.MALE);
-            } else {
-                personItem.setGender(Gender.FEMALE);
-            }
-            //personItem.setAge(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getInt());
-            personItem.setCity(qs.getResource("a").getProperty(model.getProperty("http://example.org/city")).getString());
-            personItem.setAddress(qs.getResource("a").getProperty(model.getProperty("http://example.org/address")).getString());
-            //personItem.setZip(qs.getResource("a").getProperty(model.getProperty("http://example.org/zip")).getInt());
-            personItem.setCountry(qs.getResource("a").getProperty(model.getProperty("http://example.org/country")).getString());
-*/
-
-            ResultSetFormatter.out(rs) ;
 
         } catch (Exception exc) {
             System.out.print(exc);
@@ -294,11 +263,7 @@ public class MainTestRDF {
 
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
-        String nsPerson = "http://www.example/person";
-        String nsOrg = "http://www.example/org";
-        String nsRDF = RDF.getURI();
-        String nsFoaf = FOAF.getURI();
-        String nsVcard = VCARD.getURI();
+
 
         List<Person> listPersonen = new ArrayList<Person>();
         try{
@@ -332,66 +297,7 @@ public class MainTestRDF {
 
             while (rs.hasNext()){
                 QuerySolution qs = rs.next();
-                Resource personResource = qs.getResource("a");
-                //System.out.print(qs.getResource("a").getLocalName() + " " + qs.getLiteral("b").getString());
-                //System.out.print(qs.getResource("a").getProperty(model.getProperty("http://example.org/age")).getString());
-
-                //System.out.print(qs.getResource("a").listProperties());
-
-                pListItem = new Person();
-                Statement stmt = personResource.getProperty(model.getProperty(nsFoaf + "name"));
-                if (stmt != null){
-                    pListItem.setName(stmt.getString());
-                }
-
-                stmt = personResource.getProperty(model.getProperty(nsFoaf + "gender"));
-                if (stmt != null) {
-                    String gender = stmt.getString();
-                    if(gender.compareToIgnoreCase("male") == 0){
-                        pListItem.setGender(Gender.MALE);
-                    } else {
-                        pListItem.setGender(Gender.FEMALE);
-                    }
-                }
-
-                stmt = personResource.getProperty(model.getProperty(nsVcard + "BDAY"));
-                if (stmt != null) {
-                    DateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
-                    Date birthday =  df.parse(stmt.getString());
-                    pListItem.setBirthdate(birthday);
-                }
-
-                stmt = personResource.getProperty(model.getProperty(nsVcard + "Country"));
-                if (stmt != null){
-                    pListItem.setCountry(stmt.getString());
-                }
-
-                stmt = personResource.getProperty(model.getProperty(nsVcard + "Locality"));
-                if (stmt != null){
-                    pListItem.setCity(stmt.getString());
-                }
-
-                stmt = personResource.getProperty(model.getProperty(nsVcard + "Street"));
-                if (stmt != null){
-                    pListItem.setAddress(stmt.getString());
-                }
-
-                stmt = personResource.getProperty(model.getProperty(nsVcard + "Pcode"));
-                if (stmt != null){
-                    pListItem.setZip(stmt.getString());
-                }
-
-                stmt = personResource.getProperty(model.getProperty(nsFoaf + "employer"));
-                if (stmt != null){
-                    pListItem.setEmployer(stmt.getResource().getProperty(model.getProperty(nsVcard + "Orgname")).getString());
-                }
-
-                stmt = personResource.getProperty(model.getProperty(nsFoaf + "ownsOrg"));
-                if (stmt != null){
-                    pListItem.setOwnsOrg(stmt.getResource().getProperty(model.getProperty(nsVcard + "Orgname")).getString());
-                }
-
-                listPersonen.add(pListItem);
+                listPersonen.add(getPersonItem(model, qs));
             }
 
 
@@ -409,6 +315,76 @@ public class MainTestRDF {
         return listPersonen;
     }
 
+    private static Person getPersonItem(Model model, QuerySolution qs) throws ParseException {
+        String nsPerson = "http://www.example/person";
+        String nsOrg = "http://www.example/org";
+        String nsRDF = RDF.getURI();
+        String nsFoaf = FOAF.getURI();
+        String nsVcard = VCARD.getURI();
+
+
+        Resource personResource = qs.getResource("a");
+
+        Person pListItem = new Person();
+        try {
+
+            Statement stmt = personResource.getProperty(model.getProperty(nsFoaf + "name"));
+            if (stmt != null) {
+                pListItem.setName(stmt.getString());
+            }
+
+            stmt = personResource.getProperty(model.getProperty(nsFoaf + "gender"));
+            if (stmt != null) {
+                String gender = stmt.getString();
+                if (gender.compareToIgnoreCase("male") == 0) {
+                    pListItem.setGender(Gender.MALE);
+                } else {
+                    pListItem.setGender(Gender.FEMALE);
+                }
+            }
+
+            stmt = personResource.getProperty(model.getProperty(nsVcard + "BDAY"));
+            if (stmt != null) {
+                DateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
+                Date birthday = df.parse(stmt.getString());
+                pListItem.setBirthdate(birthday);
+            }
+
+            stmt = personResource.getProperty(model.getProperty(nsVcard + "Country"));
+            if (stmt != null) {
+                pListItem.setCountry(stmt.getString());
+            }
+
+            stmt = personResource.getProperty(model.getProperty(nsVcard + "Locality"));
+            if (stmt != null) {
+                pListItem.setCity(stmt.getString());
+            }
+
+            stmt = personResource.getProperty(model.getProperty(nsVcard + "Street"));
+            if (stmt != null) {
+                pListItem.setAddress(stmt.getString());
+            }
+
+            stmt = personResource.getProperty(model.getProperty(nsVcard + "Pcode"));
+            if (stmt != null) {
+                pListItem.setZip(stmt.getString());
+            }
+
+            stmt = personResource.getProperty(model.getProperty(nsFoaf + "employer"));
+            if (stmt != null) {
+                pListItem.setEmployer(stmt.getResource().getProperty(model.getProperty(nsVcard + "Orgname")).getString());
+            }
+
+            stmt = personResource.getProperty(model.getProperty(nsFoaf + "ownsOrg"));
+            if (stmt != null) {
+                pListItem.setOwnsOrg(stmt.getResource().getProperty(model.getProperty(nsVcard + "Orgname")).getString());
+            }
+        } catch (Exception exc){
+            throw exc;
+        }
+
+        return pListItem;
+    }
 
     public static List<String> getCompanies(){
 

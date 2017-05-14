@@ -26,7 +26,16 @@
     if(request.getParameter("deletePerson") != null){
         System.out.print("delete");
         //MainTestRDF.deletePerson(request.getParameter("deletePerson"));
+
+        for (Person personItem:listPerson) {
+            if (personItem.getName().compareTo(request.getParameter("deletePerson")) == 0){
+                MainTestRDF.deletePerson(personItem);
+            }
+        }
+
         listPerson = MainTestRDF.getPersons();
+
+
     }
 
     if (request.getParameter("filter") != null){
@@ -89,6 +98,7 @@
                             "<div class=\"divTableCell\">" + item.getName() + "</div>" +
                             "<div class=\"divTableCell\">" + item.getGender().toString() + "</div>" +
                             "<div class=\"divTableCell\">" + sdf.format(item.getBirthdate()) + "</div>" +
+                        //ToDo: Countryname display not the link.
                             "<div class=\"divTableCell\">"+ item.getAddress() + ", " + item.getZip() + " " + item.getCity() + ", " + item.getCountry() + "</div>" +
                             "<div class=\"divTableCell\">" + item.getEmployer() + "</div>" +
                             "<div class=\"divTableCell\">" + item.getOwnsOrg() + "</div>" +
