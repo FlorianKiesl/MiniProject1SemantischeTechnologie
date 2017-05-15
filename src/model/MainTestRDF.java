@@ -1,5 +1,6 @@
 package model;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.Lang;
@@ -19,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createTypedLiteral;
+
 /**
  * Created by Florian on 25/04/2017.
  */
@@ -31,6 +34,8 @@ public class MainTestRDF {
 
         dataset.begin(ReadWrite.WRITE); // START TRANSACTION
         try {
+            //dataset.removeNamedModel("Florian");
+            //dataset.removeNamedModel("David");
             dataset.getDefaultModel().removeAll(); // delete everything from default model
             dataset.commit();
         } finally {
@@ -56,14 +61,15 @@ public class MainTestRDF {
         //insertPerson(p3);
         //insertPerson(p4);
 
-        getCompanies();
+        //getCompanies();
 
-        Person up1 = new Person("David", Gender.MALE, null, "USA", "Linz", "Reuchlinstraße", "4020", "JKU", "");
+        Person up1 = new Person("David", Gender.MALE, null, "USA", "Wien", "Hauptstraße", "1010", "UniWien", "");
 
-        updatePerson(p1, up1);
-        deletePerson(up1);
+        //updatePerson(p1, up1);
+        //deletePerson(p1);
+        //deletePerson(p2);
 
-        getPersons();
+        //getPersons();
         WikiRDFQuery.getCountries();
     }
 
@@ -77,8 +83,8 @@ public class MainTestRDF {
         try {
             Model model = dataset.getDefaultModel();
 
-            String nsPerson = "http://www.example/person";
-            String nsOrg = "http://www.example/org";
+            String nsPerson = "http://www.example/person#";
+            String nsOrg = "http://www.example/org#";
             String nsRDF = RDF.getURI();
             String nsFoaf = FOAF.getURI();
             String nsVcard = VCARD.getURI();
@@ -93,8 +99,10 @@ public class MainTestRDF {
             model.add(person, RDF.type, FOAF.Person);
             model.add(person, FOAF.name, p.getName());
             model.add(person, FOAF.gender, p.getGender().toString());
-            if (!(p.getBirthdate() == null))
+            if (!(p.getBirthdate() == null)) {
+                //TODO: Literal date = createTypedLiteral("1984-12-06", XSDDatatype.XSDdate);
                 model.add(person, VCARD.BDAY, p.getBirthdate().toString());
+            }
             if (!p.getAddress().equals(""))
                 model.add(person, VCARD.Street, p.getAddress());
             if (!p.getZip().equals(""))
@@ -116,8 +124,6 @@ public class MainTestRDF {
                 Property ownsOrgProp = model.createProperty(nsFoaf + "ownsOrg");
                 model.add(person, ownsOrgProp, ownsOrg);
             }
-
-            System.out.println(model.toString());
 
             RDFDataMgr.write(System.out, dataset, Lang.TRIG);
 
@@ -157,7 +163,8 @@ public class MainTestRDF {
             String inputString =
                     "PREFIX org: <http://www.example/org>\n" +
                             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                            "PREFIX person: <http://www.example/person>\n" +
+                            "PREFIX person: <http://www.example/person#>\n" +
+                            "PREFIX org: <http://www.example/org#>\n" +
                             "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>\n" +
                             "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                             "DELETE DATA {" + deleteString + "}";
@@ -182,35 +189,82 @@ public class MainTestRDF {
 
         dataset.begin(ReadWrite.WRITE);
 
-        String deleteString = "person:" + p.getName() + " foaf:name \"" + p.getName() + "\". ";
-        if(p.getBirthdate() != null)
-            deleteString += "person:" + p.getName() + " vcard:BDAY \"" + p.getBirthdate().toString() + "\". ";
-        if(!p.getGender().toString().equals(""))
-            deleteString += "person:" + p.getName() + " foaf:gender \"" + p.getGender().toString() + "\". ";
-        if(!p.getCountry().equals(""))
-            deleteString += "person:" + p.getName() + " vcard:Country \"" + p.getCountry() + "\". ";
-        if(!p.getCity().equals(""))
-            deleteString += "person:" + p.getName() + " vcard:Locality \"" + p.getCity() + "\". ";
-        if(!p.getZip().equals(""))
-            deleteString += "person:" + p.getName() + " vcard:Pcode \"" + p.getZip() + "\". ";
-        if(!p.getAddress().equals(""))
-            deleteString += "person:" + p.getName() + " vcard:Street \"" + p.getAddress() + "\". ";
-        if(!p.getEmployer().equals(""))
-            deleteString += "person:" + p.getName() + " foaf:employer org:" + p.getEmployer() + ". ";
-        if(!p.getOwnsOrg().equals(""))
-            deleteString += "person:" + p.getName() + " foaf:ownsOrg org:" + p.getOwnsOrg() + ". ";
-
         try {
             String inputString =
                     "PREFIX org: <http://www.example/org>\n" +
                             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                            "PREFIX person: <http://www.example/person>\n" +
+                            "PREFIX person: <http://www.example/person#>\n" +
+                            "PREFIX org: <http://www.example/org#>\n" +
                             "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>\n" +
                             "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                            "DELETE DATA {" + deleteString + "}";
+                            "DELETE\n" +
+                            " { ?person ?p ?v }\n" +
+                            "WHERE\n" +
+                            " { ?person foaf:name ?name .\n" +
+                            "   FILTER ( ?name = \"" + p.getName() + "\" )\n" +
+                            "   ?person ?p ?v\n" +
+                            " }";
 
             UpdateRequest update = UpdateFactory.create(inputString);
             UpdateAction.execute(update, dataset);
+
+            RDFDataMgr.write(System.out, dataset, Lang.TRIG);
+
+            dataset.commit();
+        } finally {
+            dataset.end();
+            dataset.close();
+            archivePerson(p);
+        }
+    }
+
+    private static void archivePerson(Person p) {
+        dataset = TDBFactory.assembleDataset(
+                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+
+        dataset.begin(ReadWrite.WRITE);
+        try {
+            Model model = dataset.getNamedModel(p.getName());
+
+            String nsPerson = "http://www.example/person#";
+            String nsOrg = "http://www.example/org#";
+            String nsRDF = RDF.getURI();
+            String nsFoaf = FOAF.getURI();
+            String nsVcard = VCARD.getURI();
+
+            model.setNsPrefix("person", nsPerson);
+            model.setNsPrefix("org", nsOrg);
+            model.setNsPrefix("rdf", nsRDF);
+            model.setNsPrefix("foaf", nsFoaf);
+            model.setNsPrefix("vcard", nsVcard);
+
+            Resource person = ResourceFactory.createResource(nsPerson + p.getName());
+            model.add(person, RDF.type, FOAF.Person);
+            model.add(person, FOAF.name, p.getName());
+            model.add(person, FOAF.gender, p.getGender().toString());
+            if (!(p.getBirthdate() == null))
+                model.add(person, VCARD.BDAY, p.getBirthdate().toString());
+            if (!p.getAddress().equals(""))
+                model.add(person, VCARD.Street, p.getAddress());
+            if (!p.getZip().equals(""))
+                model.add(person, VCARD.Pcode, p.getZip());
+            if (!p.getCity().equals(""))
+                model.add(person, VCARD.Locality, p.getCity());
+            if (!p.getCountry().equals(""))
+                model.add(person, VCARD.Country, p.getCountry());
+
+            if(!p.getEmployer().equals("")) {
+                Resource employer = ResourceFactory.createResource(nsOrg + p.getEmployer());
+                model.add(employer, VCARD.Orgname, p.getEmployer());
+                Property employerProp = model.createProperty(nsFoaf + "employer");
+                model.add(person, employerProp, employer);
+            }
+            if(!p.getOwnsOrg().equals("")) {
+                Resource ownsOrg = ResourceFactory.createResource(nsOrg + p.getOwnsOrg());
+                model.add(ownsOrg, VCARD.Orgname, p.getOwnsOrg());
+                Property ownsOrgProp = model.createProperty(nsFoaf + "ownsOrg");
+                model.add(person, ownsOrgProp, ownsOrg);
+            }
 
             RDFDataMgr.write(System.out, dataset, Lang.TRIG);
 
@@ -237,7 +291,7 @@ public class MainTestRDF {
             Model model = dataset.getDefaultModel();
             String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                     "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                    "PREFIX : <http://example.org/> " +
+                    "PREFIX : <http://example.org#/> " +
                     "SELECT * WHERE {?a rdf:type foaf:Person;" +
                                     "foaf:name ?n; " +
                                     "FILTER(?n = \"" + name + "\").}";
@@ -316,8 +370,8 @@ public class MainTestRDF {
     }
 
     private static Person getPersonItem(Model model, QuerySolution qs) throws ParseException {
-        String nsPerson = "http://www.example/person";
-        String nsOrg = "http://www.example/org";
+        String nsPerson = "http://www.example/person#";
+        String nsOrg = "http://www.example/org#";
         String nsRDF = RDF.getURI();
         String nsFoaf = FOAF.getURI();
         String nsVcard = VCARD.getURI();
