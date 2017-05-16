@@ -288,13 +288,13 @@ public class MainTestRDF {
         String filter = "";
 
         if (gender != null)
-            filter += "?p  foaf:gender  ?gender\n FILTER ( ?gender = \"" + gender.toString() + "\" ) ";
+            filter += "?a  foaf:gender  ?gender\n FILTER ( ?gender = \"" + gender.toString() + "\" ) ";
         if (!street.isEmpty())
-            filter += "?p  vcard:Street  ?street\n FILTER ( regex(lcase(str(?street)) , lcase(\"" + street + "\"))) ";
+            filter += "?a  vcard:Street  ?street\n FILTER ( regex(lcase(str(?street)) , lcase(\"" + street + "\"))) ";
         if (!zip.isEmpty())
-            filter += "?p  vcard:Pcode ?zip\n FILTER ( regex(lcase(str(?zip)) , lcase(\"" + zip + "\"))) ";
+            filter += "?a  vcard:Pcode ?zip\n FILTER ( regex(lcase(str(?zip)) , lcase(\"" + zip + "\"))) ";
         if (!city.isEmpty())
-            filter += "?p  vcard:Locality ?city\n FILTER ( regex(lcase(str(?city)) , lcase(\"" + city + "\"))) ";
+            filter += "?a  vcard:Locality ?city\n FILTER ( regex(lcase(str(?city)) , lcase(\"" + city + "\"))) ";
 
         try {
             dataset.begin(ReadWrite.READ);
@@ -304,9 +304,9 @@ public class MainTestRDF {
             String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                     "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>\n" +
                     "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                    "SELECT ?p " +
+                    "SELECT ?a " +
                     "WHERE {" +
-                    "?p  rdf:type  foaf:Person. " +
+                    "?a  rdf:type  foaf:Person. " +
                     filter +
                     "}";
 
@@ -323,7 +323,7 @@ public class MainTestRDF {
 //                    "}";
             QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
             ResultSet rs = qExec.execSelect();
-            ResultSetFormatter.out(rs);
+            //ResultSetFormatter.out(rs);
 
             while (rs.hasNext()) {
                 QuerySolution qs = rs.next();

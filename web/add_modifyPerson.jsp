@@ -46,15 +46,13 @@
             personBeforeModifying = MainTestRDF.getPerson(request.getParameter("name"));
             personAfterModifying = generatePersonItemFromForm(request);
             MainTestRDF.updatePerson(personBeforeModifying, personAfterModifying);
+            out.println("Person: " + personAfterModifying.getName() + " wurde geändert!");
+            personBeforeModifying = personAfterModifying;
         }
 
         if (viewPerson){
             personBeforeModifying = MainTestRDF.getPerson(request.getParameter("changePerson"));
-            out.print(personItem.getName());
         }
-
-
-
     %>
 
     <%!
@@ -170,19 +168,17 @@
     </div>
 
     <%
-        if (!viewPerson){
+        if (!viewPerson && !modifyPerson){
             out.print("<input type=\"submit\" name=\"addPerson\" value=\"Add\">");
         }
         else {
             out.print("<input type=\"submit\" name=\"modifyPerson\" value =\"Modify\" >");
+            out.print("<button type=\"button\" name=\"listPerson\" value =\"listPerson\" onclick=\"location.href='listPersons.jsp'\">List Persons</button>");
         }
     %>
 
     <button type="button" onclick="location.href='index.jsp'">Home</button>
 
 </form>
-
-
-
 </body>
 </html>
