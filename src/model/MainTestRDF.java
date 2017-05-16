@@ -34,7 +34,7 @@ public class MainTestRDF {
 
         dataset.begin(ReadWrite.WRITE); // START TRANSACTION
         try {
-            //dataset.removeNamedModel("Florian");
+            dataset.removeNamedModel("DavidRiederich");
             //dataset.removeNamedModel("David");
             dataset.getDefaultModel().removeAll(); // delete everything from default model
             dataset.commit();
@@ -51,34 +51,30 @@ public class MainTestRDF {
         }
 
 
-        Person p1 = new Person("David", Gender.MALE, null, "Austria", "Linz", "Reuchlinstraße", "4020", "JKU", "SomeOrg");
-        Person p2 = new Person("Florian", Gender.MALE, newBirthdate , "Austria", "Linz", "Hauptstraße", "4020", "JKU", "SomeOrg");
-        Person p3 = new Person("Christian", Gender.MALE, newBirthdate, "Austria", "Linz", "Hauptstraße", "4020", "JKU", "");
-        Person p4 = new Person("Max", Gender.MALE, new Date(), "Austria", "Linz", "Musterstraße", "4020", "JKU", "");
+        Person p1 = new Person("David Riederich", Gender.MALE, null, "Austria", "Linz", "Reuchlinstraße", "4020", "JKU", "SomeOrg");
+        Person p2 = new Person("Florian Kiesl", Gender.MALE, newBirthdate , "Austra", "Linz", "Hauptstraße", "4030", "JKU", "SomeOrg");
+        Person p3 = new Person("Christian Kern", Gender.MALE, newBirthdate, "Austria", "Wien", "Hauptstraße", "1010", "JKU", "");
+        Person p4 = new Person("Max Mustermann", Gender.MALE, null, "Austria", "Wels", "Musterstraße", "4600", "JKU", "");
 
         insertPerson(p1);
         insertPerson(p2);
-        //insertPerson(p3);
-        //insertPerson(p4);
-        Person filter = new Person();
-        filter.setName("flo");
-        filter.setAddress("");
-        filterPersons(filter);
+        insertPerson(p3);
+        insertPerson(p4);
+
+        List<Person> persons = filterPersons(Gender.MALE, "straße", "", "W");
 
         //getCompanies();
 
-        Person up1 = new Person("David", Gender.MALE, null, "USA", "Wien", "Hauptstraße", "1010", "UniWien", "");
+        //Person up1 = new Person("David Riederich", Gender.MALE, null, "Austria", "Linz", "Reuchlinstraße11", "4020", "JKU", "SomeOrg");
 
         //updatePerson(p1, up1);
-        //deletePerson(p1);
-        //deletePerson(p2);
+        //deletePerson(up1);
+       // deletePerson(p2);
 
         //getPersons();
         WikiRDFQuery.getCountries();
     }
 
-    // todo: unternehmer-eigentümer: Person p, Org-name
-    // todo: Date: null, alles andere leer-string
     public static void insertPerson(Person p) {
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
@@ -99,14 +95,12 @@ public class MainTestRDF {
             model.setNsPrefix("foaf", nsFoaf);
             model.setNsPrefix("vcard", nsVcard);
 
-            Resource person = ResourceFactory.createResource(nsPerson + p.getName());
+            Resource person = ResourceFactory.createResource(nsPerson + p.getName().replaceAll("\\s+",""));
             model.add(person, RDF.type, FOAF.Person);
             model.add(person, FOAF.name, p.getName());
             model.add(person, FOAF.gender, p.getGender().toString());
-            if (!(p.getBirthdate() == null)) {
-                //TODO: Literal date = createTypedLiteral("1984-12-06", XSDDatatype.XSDdate);
+            if (!(p.getBirthdate() == null))
                 model.add(person, VCARD.BDAY, p.getBirthdate().toString());
-            }
             if (!p.getAddress().equals(""))
                 model.add(person, VCARD.Street, p.getAddress());
             if (!p.getZip().equals(""))
@@ -145,23 +139,25 @@ public class MainTestRDF {
 
         dataset.begin(ReadWrite.WRITE);
 
+        String personName = newP.getName().replaceAll("\\s+","");
+
         String deleteString = "";
-        if(oldP.getBirthdate() != newP.getBirthdate())
-            deleteString += "person:" + newP.getName() + " vcard:BDAY \"" + oldP.getBirthdate().toString() + "\". ";
+        if(oldP.getBirthdate() != null)
+            deleteString += "person:" + personName + " vcard:BDAY \"" + oldP.getBirthdate().toString() + "\". ";
         if(!oldP.getGender().toString().equals(newP.getGender().toString()))
-            deleteString += "person:" + newP.getName() + " foaf:gender \"" + oldP.getGender().toString() + "\". ";
+            deleteString += "person:" + personName + " foaf:gender \"" + oldP.getGender().toString() + "\". ";
         if(!oldP.getCountry().equals(newP.getCountry()))
-            deleteString += "person:" + newP.getName() + " vcard:Country \"" + oldP.getCountry() + "\". ";
+            deleteString += "person:" + personName + " vcard:Country \"" + oldP.getCountry() + "\". ";
         if(!oldP.getCity().equals(newP.getCity()))
-            deleteString += "person:" + newP.getName() + " vcard:Locality \"" + oldP.getCity() + "\". ";
+            deleteString += "person:" + personName + " vcard:Locality \"" + oldP.getCity() + "\". ";
         if(!oldP.getZip().equals(newP.getZip()))
-            deleteString += "person:" + newP.getName() + " vcard:Pcode \"" + oldP.getZip() + "\". ";
+            deleteString += "person:" + personName + " vcard:Pcode \"" + oldP.getZip() + "\". ";
         if(!oldP.getAddress().equals(newP.getAddress()))
-            deleteString += "person:" + newP.getName() + " vcard:Street \"" + oldP.getAddress() + "\". ";
+            deleteString += "person:" + personName + " vcard:Street \"" + oldP.getAddress() + "\". ";
         if(!oldP.getEmployer().equals(newP.getEmployer()))
-            deleteString += "person:" + newP.getName() + " foaf:employer org:" + oldP.getEmployer() + ". ";
+            deleteString += "person:" + personName + " foaf:employer org:" + oldP.getEmployer() + ". ";
         if(!oldP.getOwnsOrg().equals(newP.getOwnsOrg()))
-            deleteString += "person:" + newP.getName() + " foaf:ownsOrg org:" + oldP.getOwnsOrg() + ". ";
+            deleteString += "person:" + personName + " foaf:ownsOrg org:" + oldP.getOwnsOrg() + ". ";
 
         try {
             String inputString =
@@ -202,12 +198,12 @@ public class MainTestRDF {
                             "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>\n" +
                             "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                             "DELETE\n" +
-                            " { ?person ?p ?v }\n" +
+                            "{ ?person ?p ?v }\n" +
                             "WHERE\n" +
-                            " { ?person foaf:name ?name .\n" +
-                            "   FILTER ( ?name = \"" + p.getName() + "\" )\n" +
-                            "   ?person ?p ?v\n" +
-                            " }";
+                            "{ ?person foaf:name ?name .\n" +
+                            "  FILTER ( ?name = \"" + p.getName() + "\" )\n" +
+                            "  ?person ?p ?v\n" +
+                            "}";
 
             UpdateRequest update = UpdateFactory.create(inputString);
             UpdateAction.execute(update, dataset);
@@ -228,7 +224,7 @@ public class MainTestRDF {
 
         dataset.begin(ReadWrite.WRITE);
         try {
-            Model model = dataset.getNamedModel(p.getName());
+            Model model = dataset.getNamedModel(p.getName().replaceAll("\\s+",""));
 
             String nsPerson = "http://www.example/person#";
             String nsOrg = "http://www.example/org#";
@@ -242,7 +238,7 @@ public class MainTestRDF {
             model.setNsPrefix("foaf", nsFoaf);
             model.setNsPrefix("vcard", nsVcard);
 
-            Resource person = ResourceFactory.createResource(nsPerson + p.getName());
+            Resource person = ResourceFactory.createResource(nsPerson + p.getName().replaceAll("\\s+",""));
             model.add(person, RDF.type, FOAF.Person);
             model.add(person, FOAF.name, p.getName());
             model.add(person, FOAF.gender, p.getGender().toString());
@@ -279,7 +275,7 @@ public class MainTestRDF {
         }
     }
 
-    public static List<Person> filterPersons(Person p) {
+    public static List<Person> filterPersons(Gender gender, String street, String zip, String city) {
         dataset = TDBFactory.assembleDataset(
                 MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
         String nsPerson = "http://www.example/person";
@@ -289,21 +285,42 @@ public class MainTestRDF {
         String nsVcard = VCARD.getURI();
         List<Person> listPersonen = new ArrayList<Person>();
 
+        String filter = "";
+
+        if (gender != null)
+            filter += "?p  foaf:gender  ?gender\n FILTER ( ?gender = \"" + gender.toString() + "\" ) ";
+        if (!street.isEmpty())
+            filter += "?p  vcard:Street  ?street\n FILTER ( regex(lcase(str(?street)) , lcase(\"" + street + "\"))) ";
+        if (!zip.isEmpty())
+            filter += "?p  vcard:Pcode ?zip\n FILTER ( regex(lcase(str(?zip)) , lcase(\"" + zip + "\"))) ";
+        if (!city.isEmpty())
+            filter += "?p  vcard:Locality ?city\n FILTER ( regex(lcase(str(?city)) , lcase(\"" + city + "\"))) ";
+
         try {
             dataset.begin(ReadWrite.READ);
 
             Model model = dataset.getDefaultModel();
 
             String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                    "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>\n" +
                     "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                    "SELECT ?a WHERE {?a rdf:type foaf:Person; " +
-                    "foaf:name ?name."  +
-                    "FILTER (regex(lcase(str(?name)) , lcase(\"" + p.getName() + "\")))." +
-                    "OPTIONAL{" +
-                            "?a foaf:Street ?street." +
-                            "FILTER (regex(lcase(str(?street)) , lcase(\"" + p.getAddress() + "\")))." +
-                            "}" +
+                    "SELECT ?p " +
+                    "WHERE {" +
+                    "?p  rdf:type  foaf:Person. " +
+                    filter +
                     "}";
+
+
+//            String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+//                    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+//                    "SELECT ?a WHERE {?a rdf:type foaf:Person; " +
+//                    "foaf:name ?name."  +
+//                    "FILTER (regex(lcase(str(?name)) , lcase(\"" + p.getName() + "\")))." +
+//                    "OPTIONAL{" +
+//                        "?a foaf:Street ?street." +
+//                        "FILTER (regex(lcase(str(?street)) , lcase(\"" + p.getAddress() + "\")))." +
+//                        "}" +
+//                    "}";
             QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
             ResultSet rs = qExec.execSelect();
             ResultSetFormatter.out(rs);
