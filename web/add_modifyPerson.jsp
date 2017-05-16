@@ -46,7 +46,6 @@
             personBeforeModifying = MainTestRDF.getPerson(request.getParameter("name"));
             personAfterModifying = generatePersonItemFromForm(request);
             MainTestRDF.updatePerson(personBeforeModifying, personAfterModifying);
-
         }
 
         if (viewPerson){
@@ -91,7 +90,7 @@
             <div class="divTableRow">
                 <div class="divTableCellFirstColumn">name:</div>
                 <div class="divTableCell">
-                    <input type="text" <% if(viewPerson){out.print("disabled");}  %> name="name" value="<% out.print(personBeforeModifying.getName()); %>">
+                    <input type="text" <% if(viewPerson){out.print("readonly");}  %> name="name" value="<% out.print(personBeforeModifying.getName()); %>">
                 </div>
             </div>
             <div class="divTableRow">

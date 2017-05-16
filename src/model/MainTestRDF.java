@@ -60,6 +60,10 @@ public class MainTestRDF {
         insertPerson(p2);
         //insertPerson(p3);
         //insertPerson(p4);
+        Person filter = new Person();
+        filter.setName("flo");
+        filter.setAddress("");
+        filterPersons(filter);
 
         //getCompanies();
 
@@ -275,8 +279,49 @@ public class MainTestRDF {
         }
     }
 
-    public static void filterPersons(Person p){
+    public static List<Person> filterPersons(Person p) {
+        dataset = TDBFactory.assembleDataset(
+                MainTestRDF.class.getResource("tdb-assembler.ttl").getPath());
+        String nsPerson = "http://www.example/person";
+        String nsOrg = "http://www.example/org";
+        String nsRDF = RDF.getURI();
+        String nsFoaf = FOAF.getURI();
+        String nsVcard = VCARD.getURI();
+        List<Person> listPersonen = new ArrayList<Person>();
 
+        try {
+            dataset.begin(ReadWrite.READ);
+
+            Model model = dataset.getDefaultModel();
+
+            String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                    "SELECT ?a WHERE {?a rdf:type foaf:Person; " +
+                    "foaf:name ?name."  +
+                    "FILTER (regex(lcase(str(?name)) , lcase(\"" + p.getName() + "\")))." +
+                    "OPTIONAL{" +
+                            "?a foaf:Street ?street." +
+                            "FILTER (regex(lcase(str(?street)) , lcase(\"" + p.getAddress() + "\")))." +
+                            "}" +
+                    "}";
+            QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
+            ResultSet rs = qExec.execSelect();
+            ResultSetFormatter.out(rs);
+
+            while (rs.hasNext()) {
+                QuerySolution qs = rs.next();
+                listPersonen.add(getPersonItem(model, qs));
+            }
+
+
+        } catch (Exception exc) {
+            System.out.println(exc.getMessage());
+        } finally {
+            dataset.end();
+            dataset.close();
+        }
+
+        return listPersonen;
     }
 
     public static  Person getPerson(String name) {
@@ -329,20 +374,6 @@ public class MainTestRDF {
                     "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                     "SELECT * WHERE {?a rdf:type foaf:Person}" ;
 
-                    /*+ a foaf:Person.
-                    //":age ?b;" +
-                    "vcard:Street ?c;" +
-                    "vcard:Pcode ?d;" +
-                    "vcard:Locality ?e;" +
-                    "foaf:employer ?g;" +
-                    "foaf:gender ?h. }";
-                    "PREFIX org: <http://www.example/org>\n" +
-                    "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                    "PREFIX person: <http://www.example/person>\n" +
-                    "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>\n" +
-                    "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                    */
-
             QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
             ResultSet rs = qExec.execSelect() ;
             //ResultSetFormatter.out(rs) ;
@@ -353,9 +384,6 @@ public class MainTestRDF {
                 QuerySolution qs = rs.next();
                 listPersonen.add(getPersonItem(model, qs));
             }
-
-
-
 
         } catch (Exception exc){
             System.out.print(exc);
